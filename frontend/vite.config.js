@@ -15,4 +15,19 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://backend.ddev.site',
+        changeOrigin: true,
+        secure: false
+      },
+      '/sanctum': {
+        target: 'http://backend.ddev.site',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  }
 })

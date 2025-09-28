@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+.auth-container {
+  @apply min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4;
+}
+
+.auth-card {
+  @apply bg-white rounded-2xl shadow-xl p-8 w-full max-w-md;
+}
+
+.auth-header {
+  @apply text-center mb-8;
+}
+
+.auth-title {
+  @apply text-3xl font-bold text-gray-900 mb-2;
+}
+
+.auth-subtitle {
+  @apply text-gray-600;
+}
+
+.auth-form {
+  @apply space-y-6;
+}
+
+.auth-input {
+  @apply w-full;
+}
+
+.auth-button {
+  @apply w-full py-3 text-lg font-semibold;
+}
+
+.auth-link {
+  @apply text-center text-sm text-gray-600;
+}
+
+.auth-link a {
+  @apply text-primary-600 hover:text-primary-700 font-medium;
+}
+
+.error-message {
+  @apply text-red-500 text-sm mt-1;
+}
+
+.success-message {
+  @apply text-green-500 text-sm mt-1;
+}
