@@ -6,7 +6,7 @@ A secure password management system built with Vue 3 + Laravel, focusing on high
 
 - **Frontend**: Vue 3 + PrimeVue + Tailwind CSS
 - **Backend**: Laravel API with JWT/Sanctum
-- **Database**: PostgreSQL
+- **Database**: MySQL
 - **Security**: Client-side encryption, 2FA, Rate limiting
 
 ## 🚀 Quick Start
