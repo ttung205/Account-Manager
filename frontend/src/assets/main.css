@@ -27,12 +27,9 @@
   @apply space-y-6;
 }
 
-.auth-input {
-  @apply w-full;
-}
-
-.auth-button {
-  @apply w-full py-3 text-lg font-semibold;
+/* Label styles */
+.field label {
+  @apply font-medium text-gray-700;
 }
 
 .auth-link {

@@ -8,7 +8,7 @@
 
       <form @submit.prevent="handleLogin" class="auth-form">
         <div class="field">
-          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="email" class="block text-sm mb-2 font-medium text-gray-700">
             Email Address
           </label>
           <InputText
@@ -16,22 +16,25 @@
             v-model="form.email"
             type="email"
             placeholder="Enter your email"
-            class="auth-input"
-            :class="{ 'p-invalid': errors.email }"
+            class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 
+                   focus:border-blue-500 focus:ring-4 focus:ring-blue-100 
+                   transition-all duration-200 text-base placeholder:text-gray-400
+                   hover:border-gray-300"
+            :class="{ 'border-red-400 focus:border-red-500 focus:ring-red-100': errors.email }"
             required
           />
           <small v-if="errors.email" class="error-message">{{ errors.email }}</small>
         </div>
 
         <div class="field">
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="password" class="block text-sm mb-2 font-medium text-gray-700">
             Password
           </label>
           <Password
             id="password"
             v-model="form.password"
             placeholder="Enter your password"
-            class="auth-input"
+            class="w-full [&>input]:w-full [&>input]:px-4 [&>input]:py-3 [&>input]:rounded-lg [&>input]:border-2 [&>input]:border-gray-200 [&>input]:focus:border-blue-500 [&>input]:focus:ring-4 [&>input]:focus:ring-blue-100 [&>input]:transition-all [&>input]:duration-200 [&>input]:text-base [&>input]:placeholder:text-gray-400 [&>input]:hover:border-gray-300"
             :class="{ 'p-invalid': errors.password }"
             :feedback="false"
             toggleMask
@@ -43,7 +46,7 @@
         <Button
           type="submit"
           label="Sign In"
-          class="auth-button"
+          class="w-full text-base"
           :loading="authStore.isLoading"
           :disabled="authStore.isLoading"
         />
