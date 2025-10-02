@@ -54,6 +54,16 @@
             :feedback="false"
             toggleMask
             :required="!isEditMode"
+            :pt="{
+              input: {
+                class: 'w-full px-3 py-2',
+                style: 'width: 100% !important; min-width: 100% !important;'
+              },
+              root: {
+                class: 'w-full',
+                style: 'width: 100% !important;'
+              }
+            }"
           />
           <Button
             type="button"
@@ -340,6 +350,32 @@ const handlePasswordGenerated = (password) => {
 
 .field label {
   @apply font-medium text-gray-700;
+}
+
+/* Force full width for password inputs in flex container */
+:deep(.p-password) {
+  width: 100% !important;
+  flex: 1 !important;
+}
+
+:deep(.p-password .p-inputtext) {
+  width: 100% !important;
+  min-width: 100% !important;
+}
+
+:deep(.p-password-input) {
+  width: 100% !important;
+  min-width: 100% !important;
+}
+
+/* Ensure flex container takes full width */
+.flex.gap-2 {
+  width: 100%;
+}
+
+.flex-1 {
+  flex: 1 !important;
+  width: 100% !important;
 }
 </style>
 

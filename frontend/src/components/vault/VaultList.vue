@@ -32,7 +32,18 @@
       <!-- Toolbar -->
       <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
         <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div class="flex gap-2 w-full sm:w-auto">
+          <div class="flex-1 w-full sm:w-auto">
+            <IconField iconPosition="left" class="w-full">
+              <InputIcon class="pi pi-search" />
+              <InputText
+                v-model="searchQuery"
+                placeholder="Search accounts..."
+                class="w-full pl-10"
+              />
+            </IconField>
+          </div>
+          
+          <div class="flex gap-2 items-center w-full sm:w-auto">
             <Dropdown
               v-model="selectedCategory"
               :options="categoryOptions"
