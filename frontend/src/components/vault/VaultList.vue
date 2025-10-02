@@ -32,17 +32,6 @@
       <!-- Toolbar -->
       <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
         <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div class="flex-1 w-full sm:w-auto">
-            <IconField iconPosition="left" class="w-full">
-              <InputIcon class="pi pi-search" />
-              <InputText
-                v-model="searchQuery"
-                placeholder="Search accounts..."
-                class="w-full"
-              />
-            </IconField>
-          </div>
-          
           <div class="flex gap-2 w-full sm:w-auto">
             <Dropdown
               v-model="selectedCategory"
@@ -278,35 +267,13 @@
       </template>
     </Dialog>
 
-    <!-- Master Password Dialog (first time) -->
-    <Dialog
+    <!-- Master Password Dialog -->
+    <MasterPasswordDialog
       v-model:visible="showMasterPasswordDialog"
-      header="Enter Master Password"
-      :style="{ width: '450px' }"
-      modal
-      :closable="false"
-    >
-      <p class="mb-4 text-sm text-gray-600">
-        Enter your master password to decrypt and view your accounts.
-      </p>
-      
-      <Password
-        v-model="masterPassword"
-        placeholder="Master password"
-        class="w-full"
-        :feedback="false"
-        toggleMask
-        @keyup.enter="unlockVault"
-      />
-      
-      <template #footer>
-        <Button
-          label="Unlock"
-          class="w-full"
-          @click="unlockVault"
-        />
-      </template>
-    </Dialog>
+      :is-setup="isFirstTimeSetup"
+      @success="handleMasterPasswordSuccess"
+      @error="handleMasterPasswordError"
+    />
   </div>
 </template>
 
@@ -315,6 +282,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useAccountsStore } from '@/stores/accounts'
+import { useMasterPasswordStore } from '@/stores/masterPassword'
 import { useToast } from 'primevue/usetoast'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -328,10 +296,12 @@ import Password from 'primevue/password'
 import Tag from 'primevue/tag'
 import Avatar from 'primevue/avatar'
 import AccountFormDialog from './AccountFormDialog.vue'
+import MasterPasswordDialog from './MasterPasswordDialog.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const accountsStore = useAccountsStore()
+const masterPasswordStore = useMasterPasswordStore()
 const toast = useToast()
 
 // State
@@ -340,9 +310,9 @@ const selectedCategory = ref('all')
 const showAccountDialog = ref(false)
 const showDeleteDialog = ref(false)
 const showMasterPasswordDialog = ref(false)
+const isFirstTimeSetup = ref(false)
 const selectedAccount = ref(null)
 const accountToDelete = ref(null)
-const masterPassword = ref('')
 
 // Category options
 const categoryOptions = computed(() => [
@@ -396,20 +366,33 @@ const handleLogout = async () => {
   router.push('/login')
 }
 
-const unlockVault = async () => {
-  if (!masterPassword.value) {
+const handleMasterPasswordSuccess = async (event) => {
+  try {
+    await loadAccounts()
+    
     toast.add({
-      severity: 'warn',
-      summary: 'Warning',
-      detail: 'Please enter your master password',
+      severity: 'success',
+      summary: 'Success',
+      detail: event.isSetup ? 'Master password created successfully' : 'Vault unlocked successfully',
       life: 3000
     })
-    return
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load accounts',
+      life: 3000
+    })
   }
+}
 
-  accountsStore.setMasterPassword(masterPassword.value)
-  await loadAccounts()
-  showMasterPasswordDialog.value = false
+const handleMasterPasswordError = (error) => {
+  toast.add({
+    severity: 'error',
+    summary: 'Error',
+    detail: error.message || 'Master password error',
+    life: 3000
+  })
 }
 
 const loadAccounts = async () => {
@@ -500,6 +483,21 @@ const handleAccountSaved = () => {
   })
 }
 
+// Setup event listeners for master password timeout
+const setupMasterPasswordListeners = () => {
+  // Handle master password timeout
+  window.addEventListener('masterPasswordTimeout', () => {
+    toast.add({
+      severity: 'warn',
+      summary: 'Session Expired',
+      detail: 'Your vault has been locked for security. Please enter your master password again.',
+      life: 5000
+    })
+    showMasterPasswordDialog.value = true
+    isFirstTimeSetup.value = false
+  })
+}
+
 // Lifecycle
 onMounted(async () => {
   if (!authStore.isAuthenticated) {
@@ -507,8 +505,17 @@ onMounted(async () => {
     return
   }
 
+  // Setup event listeners
+  setupMasterPasswordListeners()
+
+  // Initialize master password store
+  await masterPasswordStore.init()
+
   // Check if master password is set
-  if (!accountsStore.hasMasterPassword) {
+  if (!masterPasswordStore.isUnlocked) {
+    // Determine if this is first time setup or just unlock
+    isFirstTimeSetup.value = !masterPasswordStore.hasMasterPassword
+    console.log('Master password not unlocked. Is first time setup:', isFirstTimeSetup.value)
     showMasterPasswordDialog.value = true
   } else {
     await loadAccounts()

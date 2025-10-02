@@ -22,12 +22,12 @@ export async function deriveKey(masterPassword, salt) {
     ['deriveBits', 'deriveKey']
   )
 
-  // Derive key using PBKDF2 with 600,000 iterations (OWASP recommendation)
+  // Derive key using PBKDF2 with 1,000,000 iterations (enhanced security)
   return await window.crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
       salt: salt,
-      iterations: 600000,
+      iterations: 1000000,
       hash: 'SHA-256'
     },
     keyMaterial,

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\TwoFactorController;
+use App\Http\Controllers\Api\MasterPasswordController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -29,5 +30,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/disable', [TwoFactorController::class, 'disable']);
         Route::get('/status', [TwoFactorController::class, 'status']);
         Route::post('/regenerate-codes', [TwoFactorController::class, 'regenerateRecoveryCodes']);
+    });
+    
+    // Master Password management
+    Route::prefix('master-password')->group(function () {
+        Route::get('/status', [MasterPasswordController::class, 'status']);
+        Route::post('/create', [MasterPasswordController::class, 'create']);
+        Route::post('/verify', [MasterPasswordController::class, 'verify']);
+        Route::put('/update', [MasterPasswordController::class, 'update']);
+        Route::delete('/delete', [MasterPasswordController::class, 'destroy']);
     });
 });

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { encrypt, decrypt } from '@/utils/crypto'
+import { useMasterPasswordStore } from './masterPassword'
 
 export const useAccountsStore = defineStore('accounts', {
   state: () => ({
@@ -12,7 +13,6 @@ export const useAccountsStore = defineStore('accounts', {
     },
     loading: false,
     error: null,
-    masterPassword: null, // Stored in memory only during session
     categories: ['General', 'Social Media', 'Banking', 'Email', 'Work', 'Shopping', 'Entertainment']
   }),
 
@@ -47,24 +47,37 @@ export const useAccountsStore = defineStore('accounts', {
       )
     },
 
-    // Check if master password is set
-    hasMasterPassword: (state) => !!state.masterPassword
+    // Check if master password is unlocked
+    hasMasterPassword: () => {
+      const masterPasswordStore = useMasterPasswordStore()
+      return masterPasswordStore.isUnlocked
+    },
+
+    // Check if this is first time setup
+    isFirstTimeSetup: () => {
+      const masterPasswordStore = useMasterPasswordStore()
+      return !masterPasswordStore.hasMasterPassword
+    }
   },
 
   actions: {
-    // Set master password for the session
-    setMasterPassword(password) {
-      this.masterPassword = password
-    },
-
     // Clear master password (on logout or timeout)
     clearMasterPassword() {
-      this.masterPassword = null
+      const masterPasswordStore = useMasterPasswordStore()
+      masterPasswordStore.clearMasterPassword()
+    },
+
+    // Extend master password timeout
+    extendMasterPasswordTimeout(minutes = 15) {
+      const masterPasswordStore = useMasterPasswordStore()
+      masterPasswordStore.extendTimeout(minutes)
     },
 
     // Fetch all accounts
     async fetchAccounts() {
-      if (!this.masterPassword) {
+      const masterPasswordStore = useMasterPasswordStore()
+      const masterPassword = masterPasswordStore.getMasterPassword
+      if (!masterPassword) {
         throw new Error('Master password required')
       }
 
@@ -107,7 +120,9 @@ export const useAccountsStore = defineStore('accounts', {
 
     // Create new account
     async createAccount(accountData) {
-      if (!this.masterPassword) {
+      const masterPasswordStore = useMasterPasswordStore()
+      const masterPassword = masterPasswordStore.getMasterPassword
+      if (!masterPassword) {
         throw new Error('Master password required')
       }
 
@@ -118,13 +133,13 @@ export const useAccountsStore = defineStore('accounts', {
         console.log('Creating account with data:', accountData)
         
         // Encrypt password before sending
-        const encryptedPassword = await encrypt(accountData.password, this.masterPassword)
+        const encryptedPassword = await encrypt(accountData.password, masterPassword)
         console.log('Password encrypted:', encryptedPassword)
 
         // Encrypt note if provided
         let encryptedNote = null
         if (accountData.note) {
-          encryptedNote = await encrypt(accountData.note, this.masterPassword)
+          encryptedNote = await encrypt(accountData.note, masterPassword)
         }
 
         const payload = {
@@ -170,7 +185,9 @@ export const useAccountsStore = defineStore('accounts', {
 
     // Update account
     async updateAccount(id, accountData) {
-      if (!this.masterPassword) {
+      const masterPasswordStore = useMasterPasswordStore()
+      const masterPassword = masterPasswordStore.getMasterPassword
+      if (!masterPassword) {
         throw new Error('Master password required')
       }
 
@@ -182,7 +199,7 @@ export const useAccountsStore = defineStore('accounts', {
 
         // Encrypt password if changed
         if (accountData.password) {
-          const encryptedPassword = await encrypt(accountData.password, this.masterPassword)
+          const encryptedPassword = await encrypt(accountData.password, masterPassword)
           payload.encrypted_password = JSON.stringify(encryptedPassword)
           delete payload.password
         }
@@ -190,7 +207,7 @@ export const useAccountsStore = defineStore('accounts', {
         // Encrypt note if provided
         if (accountData.note !== undefined) {
           if (accountData.note) {
-            const encryptedNote = await encrypt(accountData.note, this.masterPassword)
+            const encryptedNote = await encrypt(accountData.note, masterPassword)
             payload.encrypted_note = JSON.stringify(encryptedNote)
           } else {
             payload.encrypted_note = null
@@ -247,13 +264,19 @@ export const useAccountsStore = defineStore('accounts', {
 
     // Decrypt and return password for an account
     async getDecryptedPassword(account) {
-      if (!this.masterPassword) {
+      const masterPasswordStore = useMasterPasswordStore()
+      const masterPassword = masterPasswordStore.getMasterPassword
+      if (!masterPassword) {
         throw new Error('Master password required')
       }
 
       try {
         const encryptedData = JSON.parse(account._encrypted_password)
-        const password = await decrypt(encryptedData, this.masterPassword)
+        const password = await decrypt(encryptedData, masterPassword)
+        
+        // Extend timeout on successful decryption
+        masterPasswordStore.extendTimeout()
+        
         return password
       } catch (error) {
         console.error('Decryption error:', error)
@@ -263,13 +286,19 @@ export const useAccountsStore = defineStore('accounts', {
 
     // Decrypt and return note for an account
     async getDecryptedNote(account) {
-      if (!this.masterPassword || !account.encrypted_note) {
+      const masterPasswordStore = useMasterPasswordStore()
+      const masterPassword = masterPasswordStore.getMasterPassword
+      if (!masterPassword || !account.encrypted_note) {
         return null
       }
 
       try {
         const encryptedData = JSON.parse(account.encrypted_note)
-        const note = await decrypt(encryptedData, this.masterPassword)
+        const note = await decrypt(encryptedData, masterPassword)
+        
+        // Extend timeout on successful decryption
+        masterPasswordStore.extendTimeout()
+        
         return note
       } catch (error) {
         console.error('Decryption error:', error)

@@ -103,6 +103,11 @@ export const useAuthStore = defineStore('auth', {
         this.token = null
         localStorage.removeItem('token')
         this.setAuthHeader(null)
+        
+        // Clear master password from memory (but keep in database)
+        const { useMasterPasswordStore } = await import('./masterPassword')
+        const masterPasswordStore = useMasterPasswordStore()
+        masterPasswordStore.clearMasterPassword()
       }
     },
 
