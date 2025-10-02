@@ -17,10 +17,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/verify-2fa', [AuthController::class, 'verify2FA']);
     
-    // Account management
-    Route::apiResource('accounts', AccountController::class);
-    Route::post('/accounts/{account}/mark-used', [AccountController::class, 'markAsUsed']);
+    // Account management (specific routes MUST come before apiResource)
     Route::get('/accounts/statistics', [AccountController::class, 'statistics']);
+    Route::post('/accounts/{account}/mark-used', [AccountController::class, 'markAsUsed']);
+    Route::apiResource('accounts', AccountController::class);
     
     // 2FA management
     Route::prefix('2fa')->group(function () {

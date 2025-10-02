@@ -37,11 +37,13 @@ class AccountController extends Controller
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
-        $accounts = $query->paginate($request->get('per_page', 15));
+        $accounts = $query->get(); // Get all accounts (no pagination for now)
 
         return response()->json([
             'success' => true,
-            'data' => $accounts
+            'data' => [
+                'accounts' => $accounts
+            ]
         ]);
     }
 
@@ -55,7 +57,7 @@ class AccountController extends Controller
             'username' => 'required|string|max:255',
             'encrypted_password' => 'required|string',
             'encrypted_note' => 'nullable|string',
-            'website_url' => 'nullable|url|max:255',
+            'website_url' => 'nullable|string|max:255|regex:/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/',
             'category' => 'nullable|string|max:100',
             'favorite' => 'boolean',
         ]);
@@ -81,7 +83,9 @@ class AccountController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Account created successfully',
-            'data' => $account
+            'data' => [
+                'account' => $account
+            ]
         ], 201);
     }
 
@@ -122,7 +126,7 @@ class AccountController extends Controller
             'username' => 'sometimes|required|string|max:255',
             'encrypted_password' => 'sometimes|required|string',
             'encrypted_note' => 'nullable|string',
-            'website_url' => 'nullable|url|max:255',
+            'website_url' => 'nullable|string|max:255|regex:/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/',
             'category' => 'nullable|string|max:100',
             'favorite' => 'boolean',
         ]);
@@ -148,7 +152,9 @@ class AccountController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Account updated successfully',
-            'data' => $account
+            'data' => [
+                'account' => $account->fresh()
+            ]
         ]);
     }
 
@@ -202,17 +208,13 @@ class AccountController extends Controller
         $user = $request->user();
         
         $stats = [
-            'total_accounts' => $user->accounts()->count(),
-            'favorite_accounts' => $user->accounts()->favorites()->count(),
+            'total' => $user->accounts()->count(),
+            'favorites' => $user->accounts()->where('favorite', true)->count(),
             'categories' => $user->accounts()
                 ->selectRaw('category, COUNT(*) as count')
                 ->groupBy('category')
-                ->pluck('count', 'category'),
-            'recently_used' => $user->accounts()
-                ->whereNotNull('last_used_at')
-                ->orderBy('last_used_at', 'desc')
-                ->limit(5)
-                ->get(['id', 'service_name', 'last_used_at'])
+                ->pluck('count', 'category')
+                ->toArray()
         ];
 
         return response()->json([

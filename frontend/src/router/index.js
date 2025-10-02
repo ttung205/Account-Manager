@@ -6,7 +6,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/login'
+      redirect: '/vault'
     },
     {
       path: '/login',
@@ -25,6 +25,12 @@ const router = createRouter({
       name: 'Dashboard',
       component: () => import('@/components/Dashboard.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/vault',
+      name: 'Vault',
+      component: () => import('@/components/vault/VaultList.vue'),
+      meta: { requiresAuth: true }
     }
   ],
 })
@@ -36,7 +42,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
   } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next('/dashboard')
+    next('/vault')
   } else {
     next()
   }

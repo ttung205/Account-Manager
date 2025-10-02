@@ -99,9 +99,13 @@ const handleLogout = async () => {
   router.push('/login')
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (!authStore.isAuthenticated) {
     router.push('/login')
+    return
   }
+  
+  // Redirect to vault page
+  router.push('/vault')
 })
 </script>

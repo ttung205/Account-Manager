@@ -1,0 +1,518 @@
+<template>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center gap-4">
+            <h1 class="text-xl font-semibold text-gray-900">
+              <i class="pi pi-lock mr-2"></i>
+              My Vault
+            </h1>
+            <Tag :value="accountsStore.statistics.total" severity="info" class="text-sm" />
+          </div>
+          
+          <div class="flex items-center space-x-3">
+            <span class="text-sm text-gray-700">Welcome, {{ authStore.user?.name }}</span>
+            <Button
+              label="Logout"
+              icon="pi pi-sign-out"
+              severity="secondary"
+              size="small"
+              outlined
+              @click="handleLogout"
+            />
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <!-- Toolbar -->
+      <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div class="flex-1 w-full sm:w-auto">
+            <IconField iconPosition="left" class="w-full">
+              <InputIcon class="pi pi-search" />
+              <InputText
+                v-model="searchQuery"
+                placeholder="Search accounts..."
+                class="w-full"
+              />
+            </IconField>
+          </div>
+          
+          <div class="flex gap-2 w-full sm:w-auto">
+            <Dropdown
+              v-model="selectedCategory"
+              :options="categoryOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="All Categories"
+              class="w-full sm:w-48"
+            />
+            <Button
+              label="Add Account"
+              icon="pi pi-plus"
+              @click="showAccountDialog = true"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600">Total Accounts</p>
+              <p class="text-2xl font-bold text-gray-900">{{ accountsStore.statistics.total }}</p>
+            </div>
+            <i class="pi pi-key text-blue-500 text-3xl"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-yellow-500">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600">Favorites</p>
+              <p class="text-2xl font-bold text-gray-900">{{ accountsStore.statistics.favorites }}</p>
+            </div>
+            <i class="pi pi-star-fill text-yellow-500 text-3xl"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600">Categories</p>
+              <p class="text-2xl font-bold text-gray-900">{{ Object.keys(accountsStore.statistics.categories || {}).length }}</p>
+            </div>
+            <i class="pi pi-folder text-green-500 text-3xl"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-purple-500">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600">Recently Used</p>
+              <p class="text-2xl font-bold text-gray-900">{{ accountsStore.recentAccounts.length }}</p>
+            </div>
+            <i class="pi pi-clock text-purple-500 text-3xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accounts DataTable -->
+      <div class="bg-white rounded-lg shadow-sm">
+        <DataTable
+          :value="filteredAccounts"
+          :loading="accountsStore.loading"
+          :rows="10"
+          :paginator="true"
+          :rowsPerPageOptions="[10, 25, 50]"
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} accounts"
+          responsiveLayout="scroll"
+          stripedRows
+          class="p-datatable-sm"
+        >
+          <template #empty>
+            <div class="text-center py-12">
+              <i class="pi pi-lock text-gray-400 text-6xl mb-4"></i>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">No accounts yet</h3>
+              <p class="text-gray-500 mb-6">Start by adding your first account to get started.</p>
+              <Button
+                label="Add Account"
+                icon="pi pi-plus"
+                @click="showAccountDialog = true"
+              />
+            </div>
+          </template>
+
+          <Column field="favorite" header="" style="width: 50px">
+            <template #body="{ data }">
+              <Button
+                :icon="data.favorite ? 'pi pi-star-fill' : 'pi pi-star'"
+                :class="data.favorite ? 'text-yellow-500' : 'text-gray-400'"
+                text
+                rounded
+                @click="toggleFavorite(data)"
+              />
+            </template>
+          </Column>
+
+          <Column field="service_name" header="Service" sortable>
+            <template #body="{ data }">
+              <div class="flex items-center gap-2">
+                <Avatar
+                  :label="data.service_name.charAt(0).toUpperCase()"
+                  class="bg-blue-500 text-white"
+                  shape="circle"
+                  size="normal"
+                />
+                <div>
+                  <div class="font-medium">{{ data.service_name }}</div>
+                  <div v-if="data.website_url" class="text-xs text-gray-500">
+                    {{ data.website_url }}
+                  </div>
+                </div>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="username" header="Username" sortable>
+            <template #body="{ data }">
+              <span class="font-mono text-sm">{{ data.username }}</span>
+            </template>
+          </Column>
+
+          <Column field="password" header="Password">
+            <template #body="{ data }">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-sm">••••••••••</span>
+                <Button
+                  icon="pi pi-copy"
+                  text
+                  rounded
+                  size="small"
+                  v-tooltip.top="'Copy password'"
+                  @click="copyPassword(data)"
+                />
+              </div>
+            </template>
+          </Column>
+
+          <Column field="category" header="Category" sortable>
+            <template #body="{ data }">
+              <Tag :value="data.category" severity="info" class="text-xs" />
+            </template>
+          </Column>
+
+          <Column field="last_used_at" header="Last Used" sortable>
+            <template #body="{ data }">
+              <span v-if="data.last_used_at" class="text-sm text-gray-600">
+                {{ formatDate(data.last_used_at) }}
+              </span>
+              <span v-else class="text-sm text-gray-400">Never</span>
+            </template>
+          </Column>
+
+          <Column header="Actions" style="width: 150px">
+            <template #body="{ data }">
+              <div class="flex gap-1">
+                <Button
+                  icon="pi pi-eye"
+                  text
+                  rounded
+                  size="small"
+                  severity="info"
+                  v-tooltip.top="'View'"
+                  @click="viewAccount(data)"
+                />
+                <Button
+                  icon="pi pi-pencil"
+                  text
+                  rounded
+                  size="small"
+                  severity="warning"
+                  v-tooltip.top="'Edit'"
+                  @click="editAccount(data)"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  text
+                  rounded
+                  size="small"
+                  severity="danger"
+                  v-tooltip.top="'Delete'"
+                  @click="confirmDelete(data)"
+                />
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+      </div>
+    </main>
+
+    <!-- Account Form Dialog -->
+    <AccountFormDialog
+      v-model:visible="showAccountDialog"
+      :account="selectedAccount"
+      @saved="handleAccountSaved"
+    />
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog
+      v-model:visible="showDeleteDialog"
+      header="Confirm Delete"
+      :style="{ width: '450px' }"
+      modal
+    >
+      <div class="flex items-start gap-4">
+        <i class="pi pi-exclamation-triangle text-red-500 text-3xl"></i>
+        <div>
+          <p class="mb-2">Are you sure you want to delete this account?</p>
+          <p class="text-sm text-gray-600">
+            Service: <strong>{{ accountToDelete?.service_name }}</strong>
+          </p>
+          <p class="text-sm text-gray-600">
+            Username: <strong>{{ accountToDelete?.username }}</strong>
+          </p>
+        </div>
+      </div>
+      
+      <template #footer>
+        <Button
+          label="Cancel"
+          severity="secondary"
+          outlined
+          @click="showDeleteDialog = false"
+        />
+        <Button
+          label="Delete"
+          severity="danger"
+          @click="deleteAccount"
+        />
+      </template>
+    </Dialog>
+
+    <!-- Master Password Dialog (first time) -->
+    <Dialog
+      v-model:visible="showMasterPasswordDialog"
+      header="Enter Master Password"
+      :style="{ width: '450px' }"
+      modal
+      :closable="false"
+    >
+      <p class="mb-4 text-sm text-gray-600">
+        Enter your master password to decrypt and view your accounts.
+      </p>
+      
+      <Password
+        v-model="masterPassword"
+        placeholder="Master password"
+        class="w-full"
+        :feedback="false"
+        toggleMask
+        @keyup.enter="unlockVault"
+      />
+      
+      <template #footer>
+        <Button
+          label="Unlock"
+          class="w-full"
+          @click="unlockVault"
+        />
+      </template>
+    </Dialog>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useAccountsStore } from '@/stores/accounts'
+import { useToast } from 'primevue/usetoast'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import Dropdown from 'primevue/dropdown'
+import Dialog from 'primevue/dialog'
+import Password from 'primevue/password'
+import Tag from 'primevue/tag'
+import Avatar from 'primevue/avatar'
+import AccountFormDialog from './AccountFormDialog.vue'
+
+const router = useRouter()
+const authStore = useAuthStore()
+const accountsStore = useAccountsStore()
+const toast = useToast()
+
+// State
+const searchQuery = ref('')
+const selectedCategory = ref('all')
+const showAccountDialog = ref(false)
+const showDeleteDialog = ref(false)
+const showMasterPasswordDialog = ref(false)
+const selectedAccount = ref(null)
+const accountToDelete = ref(null)
+const masterPassword = ref('')
+
+// Category options
+const categoryOptions = computed(() => [
+  { label: 'All Categories', value: 'all' },
+  ...accountsStore.categories.map(cat => ({ label: cat, value: cat }))
+])
+
+// Filtered accounts
+const filteredAccounts = computed(() => {
+  let accounts = accountsStore.accounts
+
+  // Filter by category
+  if (selectedCategory.value !== 'all') {
+    accounts = accounts.filter(acc => acc.category === selectedCategory.value)
+  }
+
+  // Filter by search query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    accounts = accounts.filter(acc =>
+      acc.service_name.toLowerCase().includes(query) ||
+      acc.username.toLowerCase().includes(query) ||
+      (acc.website_url && acc.website_url.toLowerCase().includes(query))
+    )
+  }
+
+  return accounts
+})
+
+// Format date
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now - date
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+  
+  return date.toLocaleDateString()
+}
+
+// Actions
+const handleLogout = async () => {
+  accountsStore.clearMasterPassword()
+  await authStore.logout()
+  router.push('/login')
+}
+
+const unlockVault = async () => {
+  if (!masterPassword.value) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Warning',
+      detail: 'Please enter your master password',
+      life: 3000
+    })
+    return
+  }
+
+  accountsStore.setMasterPassword(masterPassword.value)
+  await loadAccounts()
+  showMasterPasswordDialog.value = false
+}
+
+const loadAccounts = async () => {
+  const result = await accountsStore.fetchAccounts()
+  if (!result.success) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: result.error,
+      life: 3000
+    })
+  }
+  await accountsStore.fetchStatistics()
+}
+
+const viewAccount = (account) => {
+  selectedAccount.value = account
+  showAccountDialog.value = true
+}
+
+const editAccount = (account) => {
+  selectedAccount.value = account
+  showAccountDialog.value = true
+}
+
+const confirmDelete = (account) => {
+  accountToDelete.value = account
+  showDeleteDialog.value = true
+}
+
+const deleteAccount = async () => {
+  const result = await accountsStore.deleteAccount(accountToDelete.value.id)
+  
+  if (result.success) {
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Account deleted successfully',
+      life: 3000
+    })
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: result.error,
+      life: 3000
+    })
+  }
+  
+  showDeleteDialog.value = false
+  accountToDelete.value = null
+}
+
+const copyPassword = async (account) => {
+  const result = await accountsStore.copyPassword(account)
+  
+  if (result.success) {
+    toast.add({
+      severity: 'success',
+      summary: 'Copied!',
+      detail: 'Password copied to clipboard (will auto-clear in 30s)',
+      life: 3000
+    })
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: result.error,
+      life: 3000
+    })
+  }
+}
+
+const toggleFavorite = async (account) => {
+  await accountsStore.toggleFavorite(account.id)
+}
+
+const handleAccountSaved = () => {
+  selectedAccount.value = null
+  showAccountDialog.value = false
+  loadAccounts()
+  
+  toast.add({
+    severity: 'success',
+    summary: 'Success',
+    detail: 'Account saved successfully',
+    life: 3000
+  })
+}
+
+// Lifecycle
+onMounted(async () => {
+  if (!authStore.isAuthenticated) {
+    router.push('/login')
+    return
+  }
+
+  // Check if master password is set
+  if (!accountsStore.hasMasterPassword) {
+    showMasterPasswordDialog.value = true
+  } else {
+    await loadAccounts()
+  }
+})
+</script>
+
