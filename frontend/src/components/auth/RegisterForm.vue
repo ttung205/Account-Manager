@@ -15,7 +15,7 @@
             id="name"
             v-model="form.name"
             placeholder="Enter your full name"
-            class="auth-input"
+            class="auth-input w-full"
             :class="{ 'p-invalid': errors.name }"
             required
           />
@@ -31,7 +31,7 @@
             v-model="form.email"
             type="email"
             placeholder="Enter your email"
-            class="auth-input"
+            class="auth-input w-full"
             :class="{ 'p-invalid': errors.email }"
             required
           />
@@ -46,11 +46,21 @@
             id="password"
             v-model="form.password"
             placeholder="Enter your password"
-            class="auth-input"
+            class="auth-input w-full"
             :class="{ 'p-invalid': errors.password }"
             :feedback="true"
             toggleMask
             required
+            :pt="{
+              input: {
+                class: 'w-full px-4 py-3',
+                style: 'width: 100% !important;'
+              },
+              root: {
+                class: 'w-full',
+                style: 'width: 100% !important;'
+              }
+            }"
           />
           <small v-if="errors.password" class="error-message">{{ errors.password }}</small>
         </div>
@@ -63,11 +73,21 @@
             id="password_confirmation"
             v-model="form.password_confirmation"
             placeholder="Confirm your password"
-            class="auth-input"
+            class="auth-input w-full"
             :class="{ 'p-invalid': errors.password_confirmation }"
             :feedback="false"
             toggleMask
             required
+            :pt="{
+              input: {
+                class: 'w-full px-4 py-3',
+                style: 'width: 100% !important;'
+              },
+              root: {
+                class: 'w-full',
+                style: 'width: 100% !important;'
+              }
+            }"
           />
           <small v-if="errors.password_confirmation" class="error-message">{{ errors.password_confirmation }}</small>
         </div>
@@ -75,7 +95,7 @@
         <Button
           type="submit"
           label="Create Account"
-          class="auth-button"
+          class="auth-button w-full text-center"
           :loading="authStore.isLoading"
           :disabled="authStore.isLoading"
         />
@@ -153,3 +173,35 @@ const handleRegister = async () => {
   }
 }
 </script>
+
+<style scoped>
+/* Ensure all form inputs are full width */
+.field {
+  @apply mb-4 w-full;
+}
+
+.auth-input {
+  @apply w-full;
+}
+
+/* Force full width for password inputs */
+:deep(.p-password) {
+  width: 100% !important;
+}
+
+:deep(.p-password .p-inputtext) {
+  width: 100% !important;
+  min-width: 100% !important;
+}
+
+:deep(.p-password-input) {
+  width: 100% !important;
+  min-width: 100% !important;
+}
+
+/* Ensure InputText is full width */
+:deep(.p-inputtext) {
+  width: 100% !important;
+  min-width: 100% !important;
+}
+</style>
