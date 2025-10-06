@@ -98,7 +98,7 @@ class AuthController extends Controller
             ], 423);
         }
 
-        // Reset failed attempts on successful login
+        // Update last login info
         $user->update([
             'failed_login_attempts' => 0,
             'locked_until' => null,
@@ -106,15 +106,34 @@ class AuthController extends Controller
             'last_login_ip' => $request->ip(),
         ]);
 
+        // Create token
         $token = $user->createToken('auth-token')->plainTextToken;
 
+        // Check if 2FA is enabled
+        if ($user->hasTwoFactorEnabled()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Credentials verified. 2FA required.',
+                'data' => [
+                    'user' => $user,
+                    'token' => $token,
+                    'requires_2fa' => true,
+                    'two_factor_verified' => false
+                ]
+            ]);
+        }
+
+        // No 2FA required, login successful
+        RateLimiter::clear($key);
+        
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
             'data' => [
                 'user' => $user,
                 'token' => $token,
-                'requires_2fa' => $user->hasTwoFactorEnabled()
+                'requires_2fa' => false,
+                'two_factor_verified' => true
             ]
         ]);
     }

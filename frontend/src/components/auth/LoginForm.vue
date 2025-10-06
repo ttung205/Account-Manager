@@ -27,9 +27,14 @@
         </div>
 
         <div class="field">
-          <label for="password" class="block text-sm mb-2 font-medium text-gray-700">
-            Password
-          </label>
+          <div class="flex justify-between items-center mb-2">
+            <label for="password" class="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <router-link to="/forgot-password" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+              Forgot Password?
+            </router-link>
+          </div>
           <Password
             id="password"
             v-model="form.password"
@@ -106,7 +111,12 @@ const handleLogin = async () => {
   const result = await authStore.login(form)
   
   if (result.success) {
-    router.push('/dashboard')
+    // Check if 2FA is required
+    if (result.data.requires_2fa && !result.data.two_factor_verified) {
+      router.push('/2fa-verify')
+    } else {
+      router.push('/dashboard')
+    }
   }
 }
 </script>

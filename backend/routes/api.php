@@ -6,10 +6,18 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\Api\MasterPasswordController;
+use App\Http\Controllers\Api\PasswordResetController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Password reset routes (public)
+Route::prefix('password-reset')->group(function () {
+    Route::post('/request', [PasswordResetController::class, 'requestReset']);
+    Route::post('/verify-token', [PasswordResetController::class, 'verifyToken']);
+    Route::post('/reset', [PasswordResetController::class, 'resetPassword']);
+});
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {

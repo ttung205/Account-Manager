@@ -21,6 +21,24 @@ const router = createRouter({
       meta: { requiresGuest: true }
     },
     {
+      path: '/2fa-verify',
+      name: '2FAVerify',
+      component: () => import('@/components/auth/TwoFactorVerify.vue'),
+      meta: { requires2FA: true }
+    },
+    {
+      path: '/forgot-password',
+      name: 'ForgotPassword',
+      component: () => import('@/components/auth/ForgotPasswordForm.vue'),
+      meta: { requiresGuest: true }
+    },
+    {
+      path: '/reset-password',
+      name: 'ResetPassword',
+      component: () => import('@/components/auth/ResetPasswordForm.vue'),
+      meta: { requiresGuest: true }
+    },
+    {
       path: '/dashboard',
       name: 'Dashboard',
       component: () => import('@/components/Dashboard.vue'),
@@ -39,11 +57,29 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   
+  // Check if route requires full authentication
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
+    // User has token but not verified 2FA
+    if (authStore.token && authStore.requires2FA && !authStore.twoFactorVerified) {
+      next('/2fa-verify')
+    } else {
+      next('/login')
+    }
+  } 
+  // Check if route is for 2FA verification page
+  else if (to.meta.requires2FA) {
+    // Only allow if user has token and needs 2FA
+    if (!authStore.token || !authStore.requires2FA) {
+      next('/login')
+    } else {
+      next()
+    }
+  }
+  // Check if guest-only pages
+  else if (to.meta.requiresGuest && authStore.isAuthenticated) {
     next('/vault')
-  } else {
+  } 
+  else {
     next()
   }
 })

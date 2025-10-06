@@ -15,6 +15,15 @@
           <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-700">Welcome, {{ authStore.user?.name }}</span>
             <Button
+              label="2FA Security"
+              icon="pi pi-shield"
+              severity="secondary"
+              size="small"
+              outlined
+              v-tooltip.bottom="'Two-Factor Authentication Settings'"
+              @click="showTwoFactorDialog = true"
+            />
+            <Button
               label="Logout"
               icon="pi pi-sign-out"
               severity="secondary"
@@ -285,6 +294,12 @@
       @success="handleMasterPasswordSuccess"
       @error="handleMasterPasswordError"
     />
+
+    <!-- Two Factor Authentication Dialog -->
+    <TwoFactorDialog
+      v-model:visible="showTwoFactorDialog"
+      @updated="handleTwoFactorUpdated"
+    />
   </div>
 </template>
 
@@ -308,6 +323,7 @@ import Tag from 'primevue/tag'
 import Avatar from 'primevue/avatar'
 import AccountFormDialog from './AccountFormDialog.vue'
 import MasterPasswordDialog from './MasterPasswordDialog.vue'
+import TwoFactorDialog from '../auth/TwoFactorDialog.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -321,6 +337,7 @@ const selectedCategory = ref('all')
 const showAccountDialog = ref(false)
 const showDeleteDialog = ref(false)
 const showMasterPasswordDialog = ref(false)
+const showTwoFactorDialog = ref(false)
 const isFirstTimeSetup = ref(false)
 const selectedAccount = ref(null)
 const accountToDelete = ref(null)
@@ -492,6 +509,11 @@ const handleAccountSaved = () => {
     detail: 'Account saved successfully',
     life: 3000
   })
+}
+
+const handleTwoFactorUpdated = () => {
+  // Có thể thêm logic reload hoặc cập nhật UI nếu cần
+  console.log('2FA settings updated')
 }
 
 // Setup event listeners for master password timeout

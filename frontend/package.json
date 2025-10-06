@@ -19,7 +19,8 @@
     "vue-router": "^4.5.1",
     "primevue": "^3.50.0",
     "primeicons": "^7.0.0",
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "qrcode": "^1.5.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",

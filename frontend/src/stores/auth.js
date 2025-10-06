@@ -10,11 +10,13 @@ export const useAuthStore = defineStore('auth', {
     user: null,
     token: localStorage.getItem('token'),
     isLoading: false,
-    error: null
+    error: null,
+    requires2FA: false,
+    twoFactorVerified: false
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.token,
+    isAuthenticated: (state) => !!state.token && state.twoFactorVerified,
     userData: (state) => state.user
   },
 
@@ -44,6 +46,8 @@ export const useAuthStore = defineStore('auth', {
         if (response.data.success) {
           this.user = response.data.data.user
           this.token = response.data.data.token
+          this.requires2FA = response.data.data.requires_2fa
+          this.twoFactorVerified = response.data.data.two_factor_verified
           
           // Save to localStorage
           localStorage.setItem('token', this.token)
@@ -53,6 +57,28 @@ export const useAuthStore = defineStore('auth', {
         }
       } catch (error) {
         this.error = error.response?.data?.message || 'Login failed'
+        return { success: false, error: this.error }
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    // Verify 2FA
+    async verify2FA(code) {
+      this.isLoading = true
+      this.error = null
+
+      try {
+        const response = await axios.post('/api/verify-2fa', { code })
+        
+        if (response.data.success) {
+          this.twoFactorVerified = true
+          this.requires2FA = false
+          
+          return { success: true }
+        }
+      } catch (error) {
+        this.error = error.response?.data?.message || '2FA verification failed'
         return { success: false, error: this.error }
       } finally {
         this.isLoading = false
@@ -101,6 +127,8 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.user = null
         this.token = null
+        this.requires2FA = false
+        this.twoFactorVerified = false
         localStorage.removeItem('token')
         this.setAuthHeader(null)
         
