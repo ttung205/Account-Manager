@@ -7,16 +7,30 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
     isLoading: false,
     error: null,
     hasMasterPassword: false,
-    isVerified: false,
-    verifiedAt: null
+    isVerified: localStorage.getItem('masterPasswordVerified') === 'true',
+    verifiedAt: localStorage.getItem('masterPasswordVerifiedAt') ? new Date(localStorage.getItem('masterPasswordVerifiedAt')) : null
   }),
 
   getters: {
-    // Check if master password is set in memory (verified)
-    isUnlocked: (state) => state.isVerified && secureStorage.has('masterPassword'),
+    // Check if master password is set and verified
+    isUnlocked: (state) => state.isVerified,
     
-    // Get master password from secure storage
-    getMasterPassword: () => secureStorage.get('masterPassword')
+    // Get master password from secure storage or localStorage
+    getMasterPassword: () => {
+      const memoryPassword = secureStorage.get('masterPassword')
+      if (memoryPassword) return memoryPassword
+      
+      // Try to get from localStorage (base64 encoded for minimal obfuscation)
+      const storedPassword = localStorage.getItem('mp')
+      if (storedPassword) {
+        try {
+          return atob(storedPassword)
+        } catch (e) {
+          return null
+        }
+      }
+      return null
+    }
   },
 
   actions: {
@@ -60,8 +74,11 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
           this.isVerified = true
           this.verifiedAt = new Date()
           
-          // Store in secure memory
+          // Store in both secure memory and localStorage
           secureStorage.set('masterPassword', password, 15 * 60 * 1000) // 15 minutes
+          localStorage.setItem('mp', btoa(password)) // Base64 encode for minimal obfuscation
+          localStorage.setItem('masterPasswordVerified', 'true')
+          localStorage.setItem('masterPasswordVerifiedAt', this.verifiedAt.toISOString())
           
           return { success: true, data: response.data.data }
         }
@@ -93,8 +110,11 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
           this.isVerified = true
           this.verifiedAt = new Date(response.data.data.verified_at)
           
-          // Store in secure memory
+          // Store in both secure memory and localStorage
           secureStorage.set('masterPassword', password, 15 * 60 * 1000) // 15 minutes
+          localStorage.setItem('mp', btoa(password)) // Base64 encode for minimal obfuscation
+          localStorage.setItem('masterPasswordVerified', 'true')
+          localStorage.setItem('masterPasswordVerifiedAt', this.verifiedAt.toISOString())
           
           return { success: true, data: response.data.data }
         }
@@ -121,8 +141,9 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
         })
 
         if (response.data.success) {
-          // Update stored password
+          // Update stored password in both memory and localStorage
           secureStorage.set('masterPassword', newPassword, 15 * 60 * 1000)
+          localStorage.setItem('mp', btoa(newPassword))
           
           return { success: true, data: response.data.data }
         }
@@ -158,8 +179,11 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
           this.isVerified = false
           this.verifiedAt = null
           
-          // Clear from memory
+          // Clear from both memory and localStorage
           secureStorage.delete('masterPassword')
+          localStorage.removeItem('mp')
+          localStorage.removeItem('masterPasswordVerified')
+          localStorage.removeItem('masterPasswordVerifiedAt')
           
           return { success: true }
         }
@@ -178,6 +202,9 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
       this.isVerified = false
       this.verifiedAt = null
       secureStorage.delete('masterPassword')
+      localStorage.removeItem('mp')
+      localStorage.removeItem('masterPasswordVerified')
+      localStorage.removeItem('masterPasswordVerifiedAt')
     },
 
     /**
@@ -195,6 +222,19 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
      */
     async init() {
       await this.checkStatus()
+      
+      // Restore master password from localStorage if verified
+      if (this.isVerified && !secureStorage.has('masterPassword')) {
+        const storedPassword = localStorage.getItem('mp')
+        if (storedPassword) {
+          try {
+            const password = atob(storedPassword)
+            secureStorage.set('masterPassword', password, 15 * 60 * 1000)
+          } catch (e) {
+            console.error('Failed to restore master password:', e)
+          }
+        }
+      }
       
       // Setup timeout listener
       window.addEventListener('secureStorageTimeout', (event) => {

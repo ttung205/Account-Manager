@@ -11,8 +11,8 @@ export const useAuthStore = defineStore('auth', {
     token: localStorage.getItem('token'),
     isLoading: false,
     error: null,
-    requires2FA: false,
-    twoFactorVerified: false
+    requires2FA: localStorage.getItem('requires2FA') === 'true',
+    twoFactorVerified: localStorage.getItem('twoFactorVerified') === 'true'
   }),
 
   getters: {
@@ -51,6 +51,8 @@ export const useAuthStore = defineStore('auth', {
           
           // Save to localStorage
           localStorage.setItem('token', this.token)
+          localStorage.setItem('requires2FA', this.requires2FA)
+          localStorage.setItem('twoFactorVerified', this.twoFactorVerified)
           this.setAuthHeader(this.token)
           
           return { success: true, data: response.data.data }
@@ -74,6 +76,10 @@ export const useAuthStore = defineStore('auth', {
         if (response.data.success) {
           this.twoFactorVerified = true
           this.requires2FA = false
+          
+          // Save to localStorage
+          localStorage.setItem('twoFactorVerified', true)
+          localStorage.setItem('requires2FA', false)
           
           return { success: true }
         }
@@ -101,9 +107,13 @@ export const useAuthStore = defineStore('auth', {
         if (response.data.success) {
           this.user = response.data.data.user
           this.token = response.data.data.token
+          this.twoFactorVerified = true
+          this.requires2FA = false
           
           // Save to localStorage
           localStorage.setItem('token', this.token)
+          localStorage.setItem('twoFactorVerified', true)
+          localStorage.setItem('requires2FA', false)
           this.setAuthHeader(this.token)
           
           return { success: true, data: response.data.data }
@@ -130,6 +140,8 @@ export const useAuthStore = defineStore('auth', {
         this.requires2FA = false
         this.twoFactorVerified = false
         localStorage.removeItem('token')
+        localStorage.removeItem('requires2FA')
+        localStorage.removeItem('twoFactorVerified')
         this.setAuthHeader(null)
         
         // Clear master password from memory (but keep in database)

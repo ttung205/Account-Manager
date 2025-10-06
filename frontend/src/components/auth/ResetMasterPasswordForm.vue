@@ -196,9 +196,9 @@ const handleSubmit = async () => {
     
     successMessage.value = response.data.message || 'Master password đã được đặt lại thành công!';
     
-    // Redirect về dashboard sau 3 giây
+    // Redirect về vault để unlock với master password mới sau 3 giây
     setTimeout(() => {
-      router.push('/dashboard');
+      router.push('/vault');
     }, 3000);
     
   } catch (error) {
