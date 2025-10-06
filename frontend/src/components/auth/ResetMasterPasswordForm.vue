@@ -2,25 +2,25 @@
   <div class="auth-container">
     <div class="reset-password-form">
       <div class="form-header">
-        <h2>Đặt Lại Mật Khẩu</h2>
-        <p class="subtitle">Nhập mật khẩu mới để đăng nhập vào tài khoản của bạn</p>
+        <h2>Đặt Lại Master Password</h2>
+        <p class="subtitle">Nhập master password mới để mở khóa kho mật khẩu của bạn</p>
       </div>
 
     <div v-if="successMessage" class="success-message">
       <i class="pi pi-check-circle"></i>
       <div>
         <p>{{ successMessage }}</p>
-        <p class="redirect-info">Đang chuyển đến trang đăng nhập...</p>
+        <p class="redirect-info">Đang chuyển đến trang mở khóa kho...</p>
       </div>
     </div>
 
     <form @submit.prevent="handleSubmit" v-else>
       <div class="form-group">
-        <label for="password">Mật Khẩu Mới</label>
+        <label for="password">Master Password Mới</label>
         <Password
           id="password"
           v-model="formData.password"
-          placeholder="Nhập mật khẩu mới"
+          placeholder="Nhập master password mới"
           :class="{ 'p-invalid': errors.password }"
           :disabled="loading"
           toggleMask
@@ -28,7 +28,7 @@
           @input="clearError('password')"
         >
           <template #header>
-            <h6>Chọn mật khẩu</h6>
+            <h6>Chọn master password mạnh</h6>
           </template>
           <template #footer>
             <Divider />
@@ -37,7 +37,8 @@
               <li>Ít nhất một chữ thường</li>
               <li>Ít nhất một chữ hoa</li>
               <li>Ít nhất một số</li>
-              <li>Tối thiểu 8 ký tự</li>
+              <li>Ít nhất một ký tự đặc biệt (!@#$%^&*)</li>
+              <li>Tối thiểu 12 ký tự</li>
             </ul>
           </template>
         </Password>
@@ -45,11 +46,11 @@
       </div>
 
       <div class="form-group">
-        <label for="password_confirmation">Xác Nhận Mật Khẩu</label>
+        <label for="password_confirmation">Xác Nhận Master Password</label>
         <Password
           id="password_confirmation"
           v-model="formData.password_confirmation"
-          placeholder="Nhập lại mật khẩu mới"
+          placeholder="Nhập lại master password mới"
           :class="{ 'p-invalid': errors.password_confirmation }"
           :disabled="loading"
           toggleMask
@@ -67,7 +68,7 @@
       <div class="form-actions">
         <Button
           type="submit"
-          label="Đặt Lại Mật Khẩu"
+          label="Đặt Lại Master Password"
           :loading="loading"
           :disabled="loading"
           class="submit-btn"
@@ -75,10 +76,10 @@
         
         <Button
           type="button"
-          label="Quay Lại Đăng Nhập"
+          label="Quay Lại Dashboard"
           severity="secondary"
           text
-          @click="$router.push('/login')"
+          @click="$router.push('/dashboard')"
           :disabled="loading"
           class="back-btn"
         />
@@ -121,7 +122,7 @@ onMounted(() => {
   formData.email = route.query.email || '';
   
   if (!formData.token) {
-    errors.general = 'Link đặt lại mật khẩu không hợp lệ. Vui lòng yêu cầu link mới.';
+    errors.general = 'Link đặt lại master password không hợp lệ. Vui lòng yêu cầu link mới.';
   }
 });
 
@@ -138,36 +139,39 @@ const validateForm = () => {
   errors.password_confirmation = '';
   errors.general = '';
   
-  // Validate password - yêu cầu cơ bản
+  // Validate master password - yêu cầu cao hơn
   if (!formData.password) {
-    errors.password = 'Vui lòng nhập mật khẩu';
+    errors.password = 'Vui lòng nhập master password';
     isValid = false;
-  } else if (formData.password.length < 8) {
-    errors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
+  } else if (formData.password.length < 12) {
+    errors.password = 'Master password phải có ít nhất 12 ký tự';
     isValid = false;
   } else if (!/[a-z]/.test(formData.password)) {
-    errors.password = 'Mật khẩu phải có ít nhất một chữ thường';
+    errors.password = 'Master password phải có ít nhất một chữ thường';
     isValid = false;
   } else if (!/[A-Z]/.test(formData.password)) {
-    errors.password = 'Mật khẩu phải có ít nhất một chữ hoa';
+    errors.password = 'Master password phải có ít nhất một chữ hoa';
     isValid = false;
   } else if (!/[0-9]/.test(formData.password)) {
-    errors.password = 'Mật khẩu phải có ít nhất một số';
+    errors.password = 'Master password phải có ít nhất một số';
+    isValid = false;
+  } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+    errors.password = 'Master password phải có ít nhất một ký tự đặc biệt';
     isValid = false;
   }
   
   // Validate password confirmation
   if (!formData.password_confirmation) {
-    errors.password_confirmation = 'Vui lòng xác nhận mật khẩu';
+    errors.password_confirmation = 'Vui lòng xác nhận master password';
     isValid = false;
   } else if (formData.password !== formData.password_confirmation) {
-    errors.password_confirmation = 'Mật khẩu không khớp';
+    errors.password_confirmation = 'Master password không khớp';
     isValid = false;
   }
   
   // Check if we have token
   if (!formData.token) {
-    errors.general = 'Link đặt lại mật khẩu không hợp lệ. Vui lòng yêu cầu link mới.';
+    errors.general = 'Link đặt lại master password không hợp lệ. Vui lòng yêu cầu link mới.';
     isValid = false;
   }
   
@@ -185,20 +189,20 @@ const handleSubmit = async () => {
   try {
     const response = await axios.post('/api/password-reset/reset', {
       token: formData.token,
-      type: 'login',
+      type: 'master',
       password: formData.password,
       password_confirmation: formData.password_confirmation
     });
     
-    successMessage.value = response.data.message || 'Mật khẩu đã được đặt lại thành công!';
+    successMessage.value = response.data.message || 'Master password đã được đặt lại thành công!';
     
-    // Redirect về login sau 3 giây
+    // Redirect về dashboard sau 3 giây
     setTimeout(() => {
-      router.push('/login');
+      router.push('/dashboard');
     }, 3000);
     
   } catch (error) {
-    console.error('Reset password error:', error);
+    console.error('Reset master password error:', error);
     
     if (error.response) {
       if (error.response.status === 422) {
@@ -214,7 +218,7 @@ const handleSubmit = async () => {
       } else if (error.response.status === 400) {
         errors.general = error.response.data.message || 'Link đã hết hạn hoặc không hợp lệ.';
       } else {
-        errors.general = error.response.data.message || 'Không thể đặt lại mật khẩu. Vui lòng thử lại.';
+        errors.general = error.response.data.message || 'Không thể đặt lại master password. Vui lòng thử lại.';
       }
     } else {
       errors.general = 'Lỗi kết nối mạng. Vui lòng kiểm tra kết nối và thử lại.';

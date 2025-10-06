@@ -45,6 +45,12 @@ const router = createRouter({
       meta: { requiresGuest: true }
     },
     {
+      path: '/reset-master-password',
+      name: 'ResetMasterPassword',
+      component: () => import('@/components/auth/ResetMasterPasswordForm.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/dashboard',
       name: 'Dashboard',
       component: () => import('@/components/Dashboard.vue'),

@@ -50,9 +50,16 @@ class PasswordResetController extends Controller
             'expires_at' => now()->addHour(),
         ]);
 
-        // Tạo reset URL
+        // Tạo reset URL dựa vào type
         $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
-        $resetUrl = "{$frontendUrl}/reset-password?token={$token}&type={$request->type}";
+        
+        if ($request->type === 'master') {
+            // Link cho reset master password
+            $resetUrl = "{$frontendUrl}/reset-master-password?token={$token}&email={$user->email}";
+        } else {
+            // Link cho reset login password
+            $resetUrl = "{$frontendUrl}/reset-password?token={$token}&email={$user->email}";
+        }
 
         // Gửi email
         $user->notify(new PasswordResetNotification($resetUrl, $request->type, $token));
