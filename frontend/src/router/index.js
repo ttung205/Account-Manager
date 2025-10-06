@@ -33,6 +33,12 @@ const router = createRouter({
       meta: { requiresGuest: true }
     },
     {
+      path: '/forgot-master-password',
+      name: 'ForgotMasterPassword',
+      component: () => import('@/components/auth/ForgotMasterPasswordForm.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/reset-password',
       name: 'ResetPassword',
       component: () => import('@/components/auth/ResetPasswordForm.vue'),

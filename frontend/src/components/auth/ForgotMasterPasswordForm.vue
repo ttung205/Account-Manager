@@ -2,8 +2,8 @@
   <div class="auth-container">
     <div class="forgot-password-form">
       <div class="form-header">
-        <h2>Quên Password Đăng Nhập</h2>
-        <p class="subtitle">Nhập email của bạn để nhận link reset password đăng nhập.</p>
+        <h2>Quên Master Password</h2>
+        <p class="subtitle">Nhập email của bạn để nhận link reset master password.</p>
       </div>
 
     <div v-if="successMessage" class="success-message">
@@ -34,7 +34,7 @@
       <div class="form-actions">
         <Button
           type="submit"
-          label="Send Reset Link"
+          label="Gửi Link Reset"
           :loading="loading"
           :disabled="loading"
           class="submit-btn"
@@ -42,10 +42,10 @@
         
         <Button
           type="button"
-          label="Back to Login"
+          label="Quay lại"
           severity="secondary"
           text
-          @click="$router.push('/login')"
+          @click="handleBack"
           :disabled="loading"
           class="back-btn"
         />
@@ -56,13 +56,22 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import axios from 'axios';
 
 const router = useRouter();
+const authStore = useAuthStore();
+
+// Check if user is authenticated
+onMounted(() => {
+  if (!authStore.isAuthenticated) {
+    router.push('/login');
+  }
+});
 
 const formData = reactive({
   email: ''
@@ -111,18 +120,18 @@ const handleSubmit = async () => {
   try {
     const response = await axios.post('/api/password-reset/request', {
       email: formData.email,
-      type: 'login'  // Chỉ định loại là login password
+      type: 'master'  // Chỉ định loại là master password
     });
     
-    successMessage.value = response.data.message || 'Link reset password đã được gửi đến email của bạn.';
+    successMessage.value = response.data.message || 'Link reset master password đã được gửi đến email của bạn.';
     
-    // Optionally redirect to login after a delay
+    // Redirect về login sau 5 giây
     setTimeout(() => {
       router.push('/login');
     }, 5000);
     
   } catch (error) {
-    console.error('Forgot password error:', error);
+    console.error('Forgot master password error:', error);
     
     if (error.response) {
       if (error.response.status === 422) {
@@ -146,6 +155,11 @@ const handleSubmit = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const handleBack = () => {
+  // Quay lại trang trước hoặc về login
+  router.go(-1);
 };
 </script>
 
@@ -198,15 +212,13 @@ const handleSubmit = async () => {
   font-size: 0.9rem;
 }
 
-.form-group :deep(.p-inputtext),
-.form-group :deep(.p-dropdown) {
+.form-group :deep(.p-inputtext) {
   width: 100%;
   padding: 0.75rem;
   font-size: 0.95rem;
 }
 
-.form-group :deep(.p-inputtext:focus),
-.form-group :deep(.p-dropdown:focus) {
+.form-group :deep(.p-inputtext:focus) {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }

@@ -31,9 +31,19 @@
 
       <!-- Password Input -->
       <div class="field">
-        <label for="masterPassword" class="block text-sm font-medium text-gray-700 mb-2">
-          Master Password
-        </label>
+        <div class="flex justify-between items-center mb-2">
+          <label for="masterPassword" class="block text-sm font-medium text-gray-700">
+            Master Password
+          </label>
+          <router-link 
+            v-if="!isSetup" 
+            to="/forgot-master-password" 
+            class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            @click="$emit('update:visible', false)"
+          >
+            Quên Master Password?
+          </router-link>
+        </div>
         <Password
           id="masterPassword"
           v-model="password"

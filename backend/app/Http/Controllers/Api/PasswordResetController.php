@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\PasswordResetToken;
 use App\Models\User;
+use App\Models\MasterPassword;
 use App\Notifications\PasswordResetNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -119,12 +120,13 @@ class PasswordResetController extends Controller
 
         // Cập nhật mật khẩu tương ứng
         if ($request->type === 'master') {
-            $user->master_password = Hash::make($request->password);
+            // Cập nhật master password trong bảng master_passwords
+            MasterPassword::setForUser($user->id, $request->password);
         } else {
+            // Cập nhật login password
             $user->password = Hash::make($request->password);
+            $user->save();
         }
-        
-        $user->save();
 
         // Đánh dấu token đã sử dụng
         $resetToken->markAsUsed();
