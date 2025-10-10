@@ -280,7 +280,11 @@ export const useAccountsStore = defineStore('accounts', {
         return password
       } catch (error) {
         console.error('Decryption error:', error)
-        throw new Error('Không thể giải mã mật khẩu')
+        
+        // Clear master password on decryption failure - it's likely wrong/expired
+        masterPasswordStore.clearMasterPassword()
+        
+        throw new Error('Master password không hợp lệ. Vui lòng nhập lại.')
       }
     },
 
@@ -336,14 +340,18 @@ export const useAccountsStore = defineStore('accounts', {
       try {
         const password = await this.getDecryptedPassword(account)
         
+        if (!password) {
+          throw new Error('Không thể giải mã mật khẩu')
+        }
+        
         await navigator.clipboard.writeText(password)
         
         // Auto-clear clipboard after timeout
-        setTimeout(async () => {
-          const currentClipboard = await navigator.clipboard.readText()
-          if (currentClipboard === password) {
-            await navigator.clipboard.writeText('')
-          }
+        // Note: We don't verify clipboard content before clearing due to browser permissions
+        setTimeout(() => {
+          navigator.clipboard.writeText('').catch(() => {
+            // Ignore errors when clearing clipboard
+          })
         }, timeout)
 
         // Mark as used
@@ -352,7 +360,7 @@ export const useAccountsStore = defineStore('accounts', {
         return { success: true }
       } catch (error) {
         console.error('Failed to copy password:', error)
-        return { success: false, error: error.message }
+        return { success: false, error: error.message || 'Không thể sao chép mật khẩu' }
       }
     }
   }

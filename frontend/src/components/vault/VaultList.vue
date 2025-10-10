@@ -337,6 +337,7 @@ const showAccountDialog = ref(false)
 const showDeleteDialog = ref(false)
 const showMasterPasswordDialog = ref(false)
 const showTwoFactorDialog = ref(false)
+const pendingAction = ref(null) // Store pending action to retry after master password input
 const isFirstTimeSetup = ref(false)
 const selectedAccount = ref(null)
 const accountToDelete = ref(null)
@@ -403,6 +404,22 @@ const handleMasterPasswordSuccess = async (event) => {
       detail: event.isSetup ? 'Đã tạo master password thành công' : 'Đã mở khóa kho thành công',
       life: 3000
     })
+    
+    // Retry pending action if exists
+    if (pendingAction.value) {
+      const action = pendingAction.value
+      pendingAction.value = null // Clear pending action
+      
+      console.log('Retrying pending action:', action.type)
+      
+      if (action.type === 'copyPassword') {
+        // Retry copy password
+        await copyPassword(action.account)
+      } else if (action.type === 'editAccount') {
+        // Retry edit account
+        editAccount(action.account)
+      }
+    }
   } catch {
     toast.add({
       severity: 'error',
@@ -441,6 +458,21 @@ const viewAccount = (account) => {
 }
 
 const editAccount = (account) => {
+  // Check if master password is still available (needed to decrypt existing password)
+  if (!masterPasswordStore.getMasterPassword) {
+    console.log('Master password not found when editing, showing dialog')
+    // Store pending action to retry after master password input
+    pendingAction.value = { type: 'editAccount', account }
+    showMasterPasswordDialog.value = true
+    toast.add({
+      severity: 'warn',
+      summary: 'Yêu cầu xác thực',
+      detail: 'Vui lòng nhập master password để chỉnh sửa tài khoản',
+      life: 3000
+    })
+    return
+  }
+  
   selectedAccount.value = account
   showAccountDialog.value = true
 }
@@ -474,7 +506,23 @@ const deleteAccount = async () => {
 }
 
 const copyPassword = async (account) => {
+  // Check if master password is still available
+  if (!masterPasswordStore.getMasterPassword) {
+    console.log('Master password not found, showing dialog')
+    // Store pending action to retry after master password input
+    pendingAction.value = { type: 'copyPassword', account }
+    showMasterPasswordDialog.value = true
+    toast.add({
+      severity: 'warn',
+      summary: 'Yêu cầu xác thực',
+      detail: 'Vui lòng nhập master password để tiếp tục',
+      life: 3000
+    })
+    return
+  }
+  
   const result = await accountsStore.copyPassword(account)
+  console.log('Copy password result:', result)
   
   if (result.success) {
     toast.add({
@@ -484,12 +532,26 @@ const copyPassword = async (account) => {
       life: 3000
     })
   } else {
-    toast.add({
-      severity: 'error',
-      summary: 'Lỗi',
-      detail: result.error,
-      life: 3000
-    })
+    // If decryption failed or master password invalid, need to re-authenticate
+    if (result.error.includes('giải mã') || result.error.includes('không hợp lệ') || result.error.includes('Master password')) {
+      console.log('Master password invalid, showing dialog')
+      // Store pending action to retry after master password input
+      pendingAction.value = { type: 'copyPassword', account }
+      showMasterPasswordDialog.value = true
+      toast.add({
+        severity: 'warn',
+        summary: 'Yêu cầu xác thực',
+        detail: result.error,
+        life: 3000
+      })
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Lỗi',
+        detail: result.error,
+        life: 3000
+      })
+    }
   }
 }
 
