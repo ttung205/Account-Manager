@@ -16,8 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
         
+        $middleware->api(append: [
+            \App\Http\Middleware\CheckTokenExpiration::class,
+        ]);
+        
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'check.token.expiration' => \App\Http\Middleware\CheckTokenExpiration::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

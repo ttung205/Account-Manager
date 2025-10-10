@@ -1,9 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
-
-// Configure axios defaults
-axios.defaults.withCredentials = true
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || ''
+import axios from '../utils/axios'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -12,12 +8,35 @@ export const useAuthStore = defineStore('auth', {
     isLoading: false,
     error: null,
     requires2FA: localStorage.getItem('requires2FA') === 'true',
-    twoFactorVerified: localStorage.getItem('twoFactorVerified') === 'true'
+    twoFactorVerified: localStorage.getItem('twoFactorVerified') === 'true',
+    loginTime: localStorage.getItem('loginTime') ? parseInt(localStorage.getItem('loginTime')) : null,
+    sessionTimeout: 30 * 60 * 1000, // 30 minutes in milliseconds
+    sessionCheckInterval: null
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.token && state.twoFactorVerified,
-    userData: (state) => state.user
+    isAuthenticated: (state) => {
+      if (!state.token || !state.twoFactorVerified) return false
+      
+      // Check if session is expired (30 minutes)
+      if (state.loginTime) {
+        const now = Date.now()
+        const elapsed = now - state.loginTime
+        if (elapsed > state.sessionTimeout) {
+          return false
+        }
+      }
+      
+      return true
+    },
+    userData: (state) => state.user,
+    timeRemaining: (state) => {
+      if (!state.loginTime) return 0
+      const now = Date.now()
+      const elapsed = now - state.loginTime
+      const remaining = state.sessionTimeout - elapsed
+      return remaining > 0 ? Math.ceil(remaining / 1000) : 0 // in seconds
+    }
   },
 
   actions: {
@@ -48,12 +67,19 @@ export const useAuthStore = defineStore('auth', {
           this.token = response.data.data.token
           this.requires2FA = response.data.data.requires_2fa
           this.twoFactorVerified = response.data.data.two_factor_verified
+          this.loginTime = Date.now()
           
           // Save to localStorage
           localStorage.setItem('token', this.token)
           localStorage.setItem('requires2FA', this.requires2FA)
           localStorage.setItem('twoFactorVerified', this.twoFactorVerified)
+          localStorage.setItem('loginTime', this.loginTime.toString())
           this.setAuthHeader(this.token)
+          
+          // Start session check if not requiring 2FA
+          if (this.twoFactorVerified) {
+            this.startSessionCheck()
+          }
           
           return { success: true, data: response.data.data }
         }
@@ -80,6 +106,9 @@ export const useAuthStore = defineStore('auth', {
           // Save to localStorage
           localStorage.setItem('twoFactorVerified', true)
           localStorage.setItem('requires2FA', false)
+          
+          // Start session check after 2FA verification
+          this.startSessionCheck()
           
           return { success: true }
         }
@@ -109,12 +138,17 @@ export const useAuthStore = defineStore('auth', {
           this.token = response.data.data.token
           this.twoFactorVerified = true
           this.requires2FA = false
+          this.loginTime = Date.now()
           
           // Save to localStorage
           localStorage.setItem('token', this.token)
           localStorage.setItem('twoFactorVerified', true)
           localStorage.setItem('requires2FA', false)
+          localStorage.setItem('loginTime', this.loginTime.toString())
           this.setAuthHeader(this.token)
+          
+          // Start session check
+          this.startSessionCheck()
           
           return { success: true, data: response.data.data }
         }
@@ -139,9 +173,18 @@ export const useAuthStore = defineStore('auth', {
         this.token = null
         this.requires2FA = false
         this.twoFactorVerified = false
+        this.loginTime = null
+        
+        // Clear session check interval
+        if (this.sessionCheckInterval) {
+          clearInterval(this.sessionCheckInterval)
+          this.sessionCheckInterval = null
+        }
+        
         localStorage.removeItem('token')
         localStorage.removeItem('requires2FA')
         localStorage.removeItem('twoFactorVerified')
+        localStorage.removeItem('loginTime')
         this.setAuthHeader(null)
         
         // Clear master password from memory (but keep in database)
@@ -172,8 +215,40 @@ export const useAuthStore = defineStore('auth', {
     async init() {
       if (this.token) {
         this.setAuthHeader(this.token)
+        
+        // Check if session is already expired
+        if (!this.isAuthenticated) {
+          await this.logout()
+          return
+        }
+        
         await this.fetchUser()
+        
+        // Start session check timer
+        this.startSessionCheck()
       }
+    },
+
+    // Check session expiration periodically
+    startSessionCheck() {
+      // Clear any existing interval
+      if (this.sessionCheckInterval) {
+        clearInterval(this.sessionCheckInterval)
+      }
+      
+      // Check every minute
+      this.sessionCheckInterval = setInterval(() => {
+        if (!this.isAuthenticated && this.token) {
+          clearInterval(this.sessionCheckInterval)
+          alert('Phiên đăng nhập đã hết hạn (30 phút). Vui lòng đăng nhập lại.')
+          this.logout()
+          
+          // Import router dynamically to avoid circular dependency
+          import('../router').then(({ default: router }) => {
+            router.push({ name: 'login', query: { expired: 'true' } })
+          })
+        }
+      }, 60000) // Check every minute
     }
   }
 })

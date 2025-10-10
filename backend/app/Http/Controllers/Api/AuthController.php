@@ -39,7 +39,8 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        // Create token with 30 minutes expiration
+        $token = $user->createToken('auth-token', ['*'], now()->addMinutes(30))->plainTextToken;
 
         return response()->json([
             'success' => true,
@@ -106,8 +107,8 @@ class AuthController extends Controller
             'last_login_ip' => $request->ip(),
         ]);
 
-        // Create token
-        $token = $user->createToken('auth-token')->plainTextToken;
+        // Create token with 30 minutes expiration
+        $token = $user->createToken('auth-token', ['*'], now()->addMinutes(30))->plainTextToken;
 
         // Check if 2FA is enabled
         if ($user->hasTwoFactorEnabled()) {
