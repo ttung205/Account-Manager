@@ -2,7 +2,7 @@
   <Dialog
     :visible="visible"
     @update:visible="$emit('update:visible', $event)"
-    header="Password Generator"
+    header="Tạo mật khẩu tự động"
     :style="{ width: '500px' }"
     modal
   >
@@ -16,7 +16,7 @@
             severity="secondary"
             outlined
             rounded
-            v-tooltip.top="'Regenerate'"
+            v-tooltip.top="'Tạo lại'"
             @click="generateNewPassword"
           />
           <Button
@@ -24,7 +24,7 @@
             severity="info"
             outlined
             rounded
-            v-tooltip.top="'Copy'"
+            v-tooltip.top="'Sao chép'"
             @click="copyToClipboard"
           />
         </div>
@@ -56,7 +56,7 @@
       <!-- Length Slider -->
       <div class="field">
         <label class="flex justify-between items-center mb-2">
-          <span class="text-sm font-medium text-gray-700">Password Length</span>
+          <span class="text-sm font-medium text-gray-700">Độ dài mật khẩu</span>
           <span class="text-sm font-bold text-blue-600">{{ options.length }}</span>
         </label>
         <Slider
@@ -80,7 +80,7 @@
             :binary="true"
             @change="generateNewPassword"
           />
-          <label for="uppercase" class="text-sm">Uppercase Letters (A-Z)</label>
+          <label for="uppercase" class="text-sm">Chữ hoa (A-Z)</label>
         </div>
 
         <div class="flex items-center gap-2">
@@ -90,7 +90,7 @@
             :binary="true"
             @change="generateNewPassword"
           />
-          <label for="lowercase" class="text-sm">Lowercase Letters (a-z)</label>
+          <label for="lowercase" class="text-sm">Chữ thường (a-z)</label>
         </div>
 
         <div class="flex items-center gap-2">
@@ -100,7 +100,7 @@
             :binary="true"
             @change="generateNewPassword"
           />
-          <label for="numbers" class="text-sm">Numbers (0-9)</label>
+          <label for="numbers" class="text-sm">Số (0-9)</label>
         </div>
 
         <div class="flex items-center gap-2">
@@ -110,7 +110,7 @@
             :binary="true"
             @change="generateNewPassword"
           />
-          <label for="symbols" class="text-sm">Symbols (!@#$%^&*)</label>
+          <label for="symbols" class="text-sm">Ký tự đặc biệt (!@#$%^&*)</label>
         </div>
       </div>
 
@@ -119,12 +119,12 @@
         <div class="flex gap-2">
           <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
           <div class="text-xs text-blue-800">
-            <p class="font-medium mb-1">Password Security Tips:</p>
+            <p class="font-medium mb-1">Mẹo bảo mật mật khẩu:</p>
             <ul class="list-disc list-inside space-y-1">
-              <li>Use at least 12 characters for better security</li>
-              <li>Include a mix of character types</li>
-              <li>Avoid common words or patterns</li>
-              <li>Use unique passwords for each account</li>
+              <li>Sử dụng ít nhất 12 ký tự để bảo mật tốt hơn</li>
+              <li>Kết hợp nhiều loại ký tự</li>
+              <li>Tránh các từ hoặc mẫu phổ biến</li>
+              <li>Sử dụng mật khẩu riêng cho mỗi tài khoản</li>
             </ul>
           </div>
         </div>
@@ -134,13 +134,13 @@
     <template #footer>
       <div class="flex justify-between w-full">
         <Button
-          label="Cancel"
+          label="Hủy"
           severity="secondary"
           outlined
           @click="$emit('update:visible', false)"
         />
         <Button
-          label="Use Password"
+          label="Sử dụng mật khẩu"
           @click="usePassword"
         />
       </div>
@@ -193,8 +193,8 @@ const generateNewPassword = () => {
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Error',
-      detail: error.message || 'Failed to generate password',
+      summary: 'Lỗi',
+      detail: error.message || 'Không thể tạo mật khẩu',
       life: 3000
     })
   }
@@ -205,15 +205,15 @@ const copyToClipboard = async () => {
     await navigator.clipboard.writeText(generatedPassword.value)
     toast.add({
       severity: 'success',
-      summary: 'Copied!',
-      detail: 'Password copied to clipboard',
+      summary: 'Đã sao chép!',
+      detail: 'Mật khẩu đã được sao chép vào clipboard',
       life: 2000
     })
-  } catch (error) {
+  } catch {
     toast.add({
       severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to copy password',
+      summary: 'Lỗi',
+      detail: 'Không thể sao chép mật khẩu',
       life: 3000
     })
   }
@@ -223,8 +223,8 @@ const usePassword = () => {
   emit('password-generated', generatedPassword.value)
   toast.add({
     severity: 'success',
-    summary: 'Success',
-    detail: 'Password applied',
+    summary: 'Thành công',
+    detail: 'Mật khẩu đã được áp dụng',
     life: 2000
   })
 }

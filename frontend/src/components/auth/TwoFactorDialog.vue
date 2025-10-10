@@ -486,7 +486,7 @@ const enableTwoFactor = async () => {
 
   processing.value = true
   try {
-    const response = await axios.post('/api/2fa/verify', {
+    await axios.post('/api/2fa/verify', {
       code: verificationCode.value
     })
     

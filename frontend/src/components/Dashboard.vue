@@ -9,9 +9,9 @@
           </div>
           
           <div class="flex items-center space-x-4">
-            <span class="text-sm text-gray-700">Welcome, {{ authStore.user?.name }}</span>
+            <span class="text-sm text-gray-700">Xin chào, {{ authStore.user?.name }}</span>
             <Button
-              label="Logout"
+              label="Đăng xuất"
               icon="pi pi-sign-out"
               severity="secondary"
               @click="handleLogout"
@@ -35,7 +35,7 @@
                     <i class="pi pi-key text-blue-600 text-2xl"></i>
                   </div>
                   <div class="ml-4">
-                    <p class="text-sm font-medium text-blue-600">Total Accounts</p>
+                    <p class="text-sm font-medium text-blue-600">Tổng số tài khoản</p>
                     <p class="text-2xl font-semibold text-blue-900">0</p>
                   </div>
                 </div>
@@ -47,7 +47,7 @@
                     <i class="pi pi-star text-green-600 text-2xl"></i>
                   </div>
                   <div class="ml-4">
-                    <p class="text-sm font-medium text-green-600">Favorites</p>
+                    <p class="text-sm font-medium text-green-600">Yêu thích</p>
                     <p class="text-2xl font-semibold text-green-900">0</p>
                   </div>
                 </div>
@@ -59,9 +59,9 @@
                     <i class="pi pi-shield text-purple-600 text-2xl"></i>
                   </div>
                   <div class="ml-4">
-                    <p class="text-sm font-medium text-purple-600">2FA Status</p>
+                    <p class="text-sm font-medium text-purple-600">Trạng thái 2FA</p>
                     <p class="text-2xl font-semibold text-purple-900">
-                      {{ authStore.user?.two_factor_enabled ? 'Enabled' : 'Disabled' }}
+                      {{ authStore.user?.two_factor_enabled ? 'Đã bật' : 'Đã tắt' }}
                     </p>
                   </div>
                 </div>
@@ -70,10 +70,10 @@
 
             <div class="text-center py-12">
               <i class="pi pi-lock text-gray-400 text-6xl mb-4"></i>
-              <h3 class="text-lg font-medium text-gray-900 mb-2">No accounts yet</h3>
-              <p class="text-gray-500 mb-6">Start by adding your first account to get started.</p>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">Chưa có tài khoản nào</h3>
+              <p class="text-gray-500 mb-6">Bắt đầu bằng cách thêm tài khoản đầu tiên của bạn.</p>
               <Button
-                label="Add Account"
+                label="Thêm tài khoản"
                 icon="pi pi-plus"
                 class="p-button-lg"
               />
@@ -86,10 +86,14 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, defineOptions } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import Button from 'primevue/button'
+
+defineOptions({
+  name: 'DashboardPage'
+})
 
 const router = useRouter()
 const authStore = useAuthStore()

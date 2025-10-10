@@ -2,7 +2,7 @@
   <Dialog
     :visible="visible"
     @update:visible="$emit('update:visible', $event)"
-    :header="isEditMode ? 'Edit Account' : 'Add New Account'"
+    :header="isEditMode ? 'Sửa tài khoản' : 'Thêm tài khoản mới'"
     :style="{ width: '600px' }"
     modal
   >
@@ -10,12 +10,12 @@
       <!-- Service Name -->
       <div class="field">
         <label for="service_name" class="block text-sm font-medium text-gray-700 mb-2">
-          Service Name *
+          Tên dịch vụ *
         </label>
         <InputText
           id="service_name"
           v-model="form.service_name"
-          placeholder="e.g., Gmail, Facebook, GitHub"
+          placeholder="Ví dụ: Gmail, Facebook, GitHub"
           class="w-full"
           :class="{ 'p-invalid': errors.service_name }"
           required
@@ -26,12 +26,12 @@
       <!-- Username/Email -->
       <div class="field">
         <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
-          Username/Email *
+          Tên đăng nhập/Email *
         </label>
         <InputText
           id="username"
           v-model="form.username"
-          placeholder="your@email.com or username"
+          placeholder="email@example.com hoặc tên đăng nhập"
           class="w-full"
           :class="{ 'p-invalid': errors.username }"
           required
@@ -42,13 +42,13 @@
       <!-- Password -->
       <div class="field">
         <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-          Password *
+          Mật khẩu *
         </label>
         <div class="flex gap-2">
           <Password
             id="password"
             v-model="form.password"
-            :placeholder="isEditMode ? 'Leave empty to keep current' : 'Enter password'"
+            :placeholder="isEditMode ? 'Để trống để giữ mật khẩu hiện tại' : 'Nhập mật khẩu'"
             class="flex-1"
             :class="{ 'p-invalid': errors.password }"
             :feedback="false"
@@ -70,7 +70,7 @@
             icon="pi pi-refresh"
             severity="secondary"
             outlined
-            v-tooltip.top="'Generate password'"
+            v-tooltip.top="'Tạo mật khẩu tự động'"
             @click="showPasswordGenerator = true"
           />
         </div>
@@ -118,13 +118,13 @@
       <!-- Category -->
       <div class="field">
         <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
-          Category
+          Danh mục
         </label>
         <Dropdown
           id="category"
           v-model="form.category"
           :options="accountsStore.categories"
-          placeholder="Select category"
+          placeholder="Chọn danh mục"
           class="w-full"
         />
       </div>
@@ -132,12 +132,12 @@
       <!-- Note -->
       <div class="field">
         <label for="note" class="block text-sm font-medium text-gray-700 mb-2">
-          Note
+          Ghi chú
         </label>
         <Textarea
           id="note"
           v-model="form.note"
-          placeholder="Additional notes (optional)"
+          placeholder="Ghi chú bổ sung (tùy chọn)"
           rows="3"
           class="w-full"
         />
@@ -151,7 +151,7 @@
           :binary="true"
         />
         <label for="favorite" class="text-sm font-medium text-gray-700">
-          Mark as favorite
+          Đánh dấu yêu thích
         </label>
       </div>
     </form>
@@ -159,13 +159,13 @@
     <template #footer>
       <div class="flex justify-between w-full">
         <Button
-          label="Cancel"
+          label="Hủy"
           severity="secondary"
           outlined
           @click="$emit('update:visible', false)"
         />
         <Button
-          :label="isEditMode ? 'Update' : 'Save'"
+          :label="isEditMode ? 'Cập nhật' : 'Lưu'"
           :loading="accountsStore.loading"
           @click="handleSubmit"
         />
@@ -244,7 +244,7 @@ watch(() => props.account, async (newAccount) => {
     if (newAccount.encrypted_note) {
       try {
         form.note = await accountsStore.getDecryptedNote(newAccount)
-      } catch (error) {
+      } catch {
         form.note = ''
       }
     } else {
@@ -274,15 +274,15 @@ const validateForm = () => {
   Object.keys(errors).forEach(key => delete errors[key])
   
   if (!form.service_name) {
-    errors.service_name = 'Service name is required'
+    errors.service_name = 'Tên dịch vụ là bắt buộc'
   }
   
   if (!form.username) {
-    errors.username = 'Username is required'
+    errors.username = 'Tên đăng nhập là bắt buộc'
   }
   
   if (!isEditMode.value && !form.password) {
-    errors.password = 'Password is required'
+    errors.password = 'Mật khẩu là bắt buộc'
   }
   
   return Object.keys(errors).length === 0

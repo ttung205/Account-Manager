@@ -7,24 +7,24 @@
           <div class="flex items-center gap-4">
             <h1 class="text-xl font-semibold text-gray-900">
               <i class="pi pi-lock mr-2"></i>
-              My Vault
+              Kho mật khẩu
             </h1>
             <Tag :value="accountsStore.statistics.total" severity="info" class="text-sm" />
           </div>
           
           <div class="flex items-center space-x-3">
-            <span class="text-sm text-gray-700">Welcome, {{ authStore.user?.name }}</span>
+            <span class="text-sm text-gray-700">Xin chào, {{ authStore.user?.name }}</span>
             <Button
-              label="2FA Security"
+              label="Bảo mật 2FA"
               icon="pi pi-shield"
               severity="secondary"
               size="small"
               outlined
-              v-tooltip.bottom="'Two-Factor Authentication Settings'"
+              v-tooltip.bottom="'Cài đặt xác thực hai yếu tố'"
               @click="showTwoFactorDialog = true"
             />
             <Button
-              label="Logout"
+              label="Đăng xuất"
               icon="pi pi-sign-out"
               severity="secondary"
               size="small"
@@ -46,7 +46,7 @@
               <InputIcon class="pi pi-search" />
               <InputText
                 v-model="searchQuery"
-                placeholder="Search accounts..."
+                placeholder="Tìm kiếm tài khoản..."
                 class="w-full pl-10"
               />
             </IconField>
@@ -58,11 +58,11 @@
               :options="categoryOptions"
               optionLabel="label"
               optionValue="value"
-              placeholder="All Categories"
+              placeholder="Tất cả danh mục"
               class="w-full sm:w-48"
             />
             <Button
-              label="Add Account"
+              label="Thêm tài khoản"
               icon="pi pi-plus"
               @click="showAccountDialog = true"
             />
@@ -75,7 +75,7 @@
         <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600">Total Accounts</p>
+              <p class="text-sm text-gray-600">Tổng số tài khoản</p>
               <p class="text-2xl font-bold text-gray-900">{{ accountsStore.statistics.total }}</p>
             </div>
             <i class="pi pi-key text-blue-500 text-3xl"></i>
@@ -85,7 +85,7 @@
         <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-yellow-500">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600">Favorites</p>
+              <p class="text-sm text-gray-600">Yêu thích</p>
               <p class="text-2xl font-bold text-gray-900">{{ accountsStore.statistics.favorites }}</p>
             </div>
             <i class="pi pi-star-fill text-yellow-500 text-3xl"></i>
@@ -95,7 +95,7 @@
         <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600">Categories</p>
+              <p class="text-sm text-gray-600">Danh mục</p>
               <p class="text-2xl font-bold text-gray-900">{{ Object.keys(accountsStore.statistics.categories || {}).length }}</p>
             </div>
             <i class="pi pi-folder text-green-500 text-3xl"></i>
@@ -105,7 +105,7 @@
         <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-purple-500">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-600">Recently Used</p>
+              <p class="text-sm text-gray-600">Sử dụng gần đây</p>
               <p class="text-2xl font-bold text-gray-900">{{ accountsStore.recentAccounts.length }}</p>
             </div>
             <i class="pi pi-clock text-purple-500 text-3xl"></i>
@@ -122,7 +122,7 @@
           :paginator="true"
           :rowsPerPageOptions="[10, 25, 50]"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} accounts"
+          currentPageReportTemplate="Hiển thị {first} đến {last} trong tổng số {totalRecords} tài khoản"
           responsiveLayout="scroll"
           stripedRows
           class="p-datatable-sm"
@@ -130,10 +130,10 @@
           <template #empty>
             <div class="text-center py-12">
               <i class="pi pi-lock text-gray-400 text-6xl mb-4"></i>
-              <h3 class="text-lg font-medium text-gray-900 mb-2">No accounts yet</h3>
-              <p class="text-gray-500 mb-6">Start by adding your first account to get started.</p>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">Chưa có tài khoản nào</h3>
+              <p class="text-gray-500 mb-6">Bắt đầu bằng cách thêm tài khoản đầu tiên của bạn.</p>
               <Button
-                label="Add Account"
+                label="Thêm tài khoản"
                 icon="pi pi-plus"
                 @click="showAccountDialog = true"
               />
@@ -152,7 +152,7 @@
             </template>
           </Column>
 
-          <Column field="service_name" header="Service" sortable>
+          <Column field="service_name" header="Dịch vụ" sortable>
             <template #body="{ data }">
               <div class="flex items-center gap-2">
                 <Avatar
@@ -171,13 +171,13 @@
             </template>
           </Column>
 
-          <Column field="username" header="Username" sortable>
+          <Column field="username" header="Tên đăng nhập" sortable>
             <template #body="{ data }">
               <span class="font-mono text-sm">{{ data.username }}</span>
             </template>
           </Column>
 
-          <Column field="password" header="Password">
+          <Column field="password" header="Mật khẩu">
             <template #body="{ data }">
               <div class="flex items-center gap-2">
                 <span class="font-mono text-sm">••••••••••</span>
@@ -186,29 +186,29 @@
                   text
                   rounded
                   size="small"
-                  v-tooltip.top="'Copy password'"
+                  v-tooltip.top="'Sao chép mật khẩu'"
                   @click="copyPassword(data)"
                 />
               </div>
             </template>
           </Column>
 
-          <Column field="category" header="Category" sortable>
+          <Column field="category" header="Danh mục" sortable>
             <template #body="{ data }">
               <Tag :value="data.category" severity="info" class="text-xs" />
             </template>
           </Column>
 
-          <Column field="last_used_at" header="Last Used" sortable>
+          <Column field="last_used_at" header="Lần dùng cuối" sortable>
             <template #body="{ data }">
               <span v-if="data.last_used_at" class="text-sm text-gray-600">
                 {{ formatDate(data.last_used_at) }}
               </span>
-              <span v-else class="text-sm text-gray-400">Never</span>
+              <span v-else class="text-sm text-gray-400">Chưa dùng</span>
             </template>
           </Column>
 
-          <Column header="Actions" style="width: 150px">
+          <Column header="Thao tác" style="width: 150px">
             <template #body="{ data }">
               <div class="flex gap-1">
                 <Button
@@ -217,7 +217,7 @@
                   rounded
                   size="small"
                   severity="info"
-                  v-tooltip.top="'View'"
+                  v-tooltip.top="'Xem'"
                   @click="viewAccount(data)"
                 />
                 <Button
@@ -226,7 +226,7 @@
                   rounded
                   size="small"
                   severity="warning"
-                  v-tooltip.top="'Edit'"
+                  v-tooltip.top="'Sửa'"
                   @click="editAccount(data)"
                 />
                 <Button
@@ -235,7 +235,7 @@
                   rounded
                   size="small"
                   severity="danger"
-                  v-tooltip.top="'Delete'"
+                  v-tooltip.top="'Xóa'"
                   @click="confirmDelete(data)"
                 />
               </div>
@@ -255,32 +255,32 @@
     <!-- Delete Confirmation Dialog -->
     <Dialog
       v-model:visible="showDeleteDialog"
-      header="Confirm Delete"
+      header="Xác nhận xóa"
       :style="{ width: '450px' }"
       modal
     >
       <div class="flex items-start gap-4">
         <i class="pi pi-exclamation-triangle text-red-500 text-3xl"></i>
         <div>
-          <p class="mb-2">Are you sure you want to delete this account?</p>
+          <p class="mb-2">Bạn có chắc chắn muốn xóa tài khoản này?</p>
           <p class="text-sm text-gray-600">
-            Service: <strong>{{ accountToDelete?.service_name }}</strong>
+            Dịch vụ: <strong>{{ accountToDelete?.service_name }}</strong>
           </p>
           <p class="text-sm text-gray-600">
-            Username: <strong>{{ accountToDelete?.username }}</strong>
+            Tên đăng nhập: <strong>{{ accountToDelete?.username }}</strong>
           </p>
         </div>
       </div>
       
       <template #footer>
         <Button
-          label="Cancel"
+          label="Hủy"
           severity="secondary"
           outlined
           @click="showDeleteDialog = false"
         />
         <Button
-          label="Delete"
+          label="Xóa"
           severity="danger"
           @click="deleteAccount"
         />
@@ -318,7 +318,6 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Dropdown from 'primevue/dropdown'
 import Dialog from 'primevue/dialog'
-import Password from 'primevue/password'
 import Tag from 'primevue/tag'
 import Avatar from 'primevue/avatar'
 import AccountFormDialog from './AccountFormDialog.vue'
@@ -344,7 +343,7 @@ const accountToDelete = ref(null)
 
 // Category options
 const categoryOptions = computed(() => [
-  { label: 'All Categories', value: 'all' },
+  { label: 'Tất cả danh mục', value: 'all' },
   ...accountsStore.categories.map(cat => ({ label: cat, value: cat }))
 ])
 
@@ -379,10 +378,10 @@ const formatDate = (dateString) => {
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffMins < 1) return 'Vừa xong'
+  if (diffMins < 60) return `${diffMins} phút trước`
+  if (diffHours < 24) return `${diffHours} giờ trước`
+  if (diffDays < 7) return `${diffDays} ngày trước`
   
   return date.toLocaleDateString()
 }
@@ -400,15 +399,15 @@ const handleMasterPasswordSuccess = async (event) => {
     
     toast.add({
       severity: 'success',
-      summary: 'Success',
-      detail: event.isSetup ? 'Master password created successfully' : 'Vault unlocked successfully',
+      summary: 'Thành công',
+      detail: event.isSetup ? 'Đã tạo master password thành công' : 'Đã mở khóa kho thành công',
       life: 3000
     })
-  } catch (error) {
+  } catch {
     toast.add({
       severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to load accounts',
+      summary: 'Lỗi',
+      detail: 'Không thể tải danh sách tài khoản',
       life: 3000
     })
   }
@@ -417,8 +416,8 @@ const handleMasterPasswordSuccess = async (event) => {
 const handleMasterPasswordError = (error) => {
   toast.add({
     severity: 'error',
-    summary: 'Error',
-    detail: error.message || 'Master password error',
+    summary: 'Lỗi',
+    detail: error.message || 'Lỗi master password',
     life: 3000
   })
 }
@@ -428,7 +427,7 @@ const loadAccounts = async () => {
   if (!result.success) {
     toast.add({
       severity: 'error',
-      summary: 'Error',
+      summary: 'Lỗi',
       detail: result.error,
       life: 3000
     })
@@ -457,14 +456,14 @@ const deleteAccount = async () => {
   if (result.success) {
     toast.add({
       severity: 'success',
-      summary: 'Success',
-      detail: 'Account deleted successfully',
+      summary: 'Thành công',
+      detail: 'Đã xóa tài khoản thành công',
       life: 3000
     })
   } else {
     toast.add({
       severity: 'error',
-      summary: 'Error',
+      summary: 'Lỗi',
       detail: result.error,
       life: 3000
     })
@@ -480,14 +479,14 @@ const copyPassword = async (account) => {
   if (result.success) {
     toast.add({
       severity: 'success',
-      summary: 'Copied!',
-      detail: 'Password copied to clipboard (will auto-clear in 30s)',
+      summary: 'Đã sao chép!',
+      detail: 'Mật khẩu đã được sao chép vào clipboard (sẽ tự động xóa sau 30s)',
       life: 3000
     })
   } else {
     toast.add({
       severity: 'error',
-      summary: 'Error',
+      summary: 'Lỗi',
       detail: result.error,
       life: 3000
     })
@@ -505,8 +504,8 @@ const handleAccountSaved = () => {
   
   toast.add({
     severity: 'success',
-    summary: 'Success',
-    detail: 'Account saved successfully',
+    summary: 'Thành công',
+    detail: 'Đã lưu tài khoản thành công',
     life: 3000
   })
 }
@@ -522,8 +521,8 @@ const setupMasterPasswordListeners = () => {
   window.addEventListener('masterPasswordTimeout', () => {
     toast.add({
       severity: 'warn',
-      summary: 'Session Expired',
-      detail: 'Your vault has been locked for security. Please enter your master password again.',
+      summary: 'Phiên đã hết hạn',
+      detail: 'Kho của bạn đã bị khóa để bảo mật. Vui lòng nhập lại master password.',
       life: 5000
     })
     showMasterPasswordDialog.value = true

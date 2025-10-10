@@ -210,7 +210,7 @@ const handleSubmit = async () => {
         const validationErrors = error.response.data.errors;
         if (validationErrors) {
           Object.keys(validationErrors).forEach(key => {
-            if (errors.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(errors, key)) {
               errors[key] = validationErrors[key][0];
             }
           });

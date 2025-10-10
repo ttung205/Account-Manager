@@ -164,7 +164,7 @@ export class MasterPasswordManager {
       errors.push('Must contain numbers')
     }
 
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
       warnings.push('Consider adding special characters for better security')
     }
 
@@ -200,7 +200,7 @@ export class MasterPasswordManager {
     if (/[a-z]/.test(password)) score += 5
     if (/[A-Z]/.test(password)) score += 5
     if (/\d/.test(password)) score += 5
-    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 10
+    if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) score += 10
 
     // Entropy bonus
     const uniqueChars = new Set(password).size
@@ -356,8 +356,8 @@ export class MasterPasswordManager {
       
       localStorage.setItem('masterPasswordVerification', JSON.stringify(verificationData))
       
-    } catch (error) {
-      console.error('Failed to create verification data:', error)
+    } catch (err) {
+      console.error('Failed to create verification data:', err)
       throw new Error('Failed to setup master password verification')
     }
   }
@@ -422,7 +422,7 @@ export class MasterPasswordManager {
       // Check if decrypted data matches expected test data
       return decryptedData === expectedTestData
       
-    } catch (error) {
+    } catch {
       // Decryption failed, password is incorrect
       return false
     }

@@ -78,7 +78,7 @@ export const useAccountsStore = defineStore('accounts', {
       const masterPasswordStore = useMasterPasswordStore()
       const masterPassword = masterPasswordStore.getMasterPassword
       if (!masterPassword) {
-        throw new Error('Master password required')
+        throw new Error('Cần có Master password')
       }
 
       this.loading = true
@@ -98,7 +98,7 @@ export const useAccountsStore = defineStore('accounts', {
           return { success: true }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Failed to fetch accounts'
+        this.error = error.response?.data?.message || 'Không thể tải danh sách tài khoản'
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -123,7 +123,7 @@ export const useAccountsStore = defineStore('accounts', {
       const masterPasswordStore = useMasterPasswordStore()
       const masterPassword = masterPasswordStore.getMasterPassword
       if (!masterPassword) {
-        throw new Error('Master password required')
+        throw new Error('Cần có Master password')
       }
 
       this.loading = true
@@ -172,11 +172,11 @@ export const useAccountsStore = defineStore('accounts', {
           return { success: true, data: newAccount }
         } else {
           console.error('Response not successful:', response.data)
-          return { success: false, error: 'Server returned unsuccessful response' }
+          return { success: false, error: 'Server trả về phản hồi không thành công' }
         }
       } catch (error) {
         console.error('Error creating account:', error.response?.data)
-        this.error = error.response?.data?.message || error.response?.data?.errors || 'Failed to create account'
+        this.error = error.response?.data?.message || error.response?.data?.errors || 'Không thể tạo tài khoản'
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -188,7 +188,7 @@ export const useAccountsStore = defineStore('accounts', {
       const masterPasswordStore = useMasterPasswordStore()
       const masterPassword = masterPasswordStore.getMasterPassword
       if (!masterPassword) {
-        throw new Error('Master password required')
+        throw new Error('Cần có Master password')
       }
 
       this.loading = true
@@ -233,7 +233,7 @@ export const useAccountsStore = defineStore('accounts', {
           return { success: true, data: updatedAccount }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Failed to update account'
+        this.error = error.response?.data?.message || 'Không thể cập nhật tài khoản'
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -255,7 +255,7 @@ export const useAccountsStore = defineStore('accounts', {
           return { success: true }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Failed to delete account'
+        this.error = error.response?.data?.message || 'Không thể xóa tài khoản'
         return { success: false, error: this.error }
       } finally {
         this.loading = false
@@ -267,7 +267,7 @@ export const useAccountsStore = defineStore('accounts', {
       const masterPasswordStore = useMasterPasswordStore()
       const masterPassword = masterPasswordStore.getMasterPassword
       if (!masterPassword) {
-        throw new Error('Master password required')
+        throw new Error('Cần có Master password')
       }
 
       try {
@@ -280,7 +280,7 @@ export const useAccountsStore = defineStore('accounts', {
         return password
       } catch (error) {
         console.error('Decryption error:', error)
-        throw new Error('Failed to decrypt password')
+        throw new Error('Không thể giải mã mật khẩu')
       }
     },
 

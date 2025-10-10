@@ -216,11 +216,11 @@ export function calculatePasswordStrength(password) {
  */
 export function getPasswordStrengthInfo(strength) {
   const info = {
-    0: { label: 'Very Weak', color: 'red' },
-    1: { label: 'Weak', color: 'orange' },
-    2: { label: 'Fair', color: 'yellow' },
-    3: { label: 'Strong', color: 'blue' },
-    4: { label: 'Very Strong', color: 'green' }
+    0: { label: 'Rất yếu', color: 'red' },
+    1: { label: 'Yếu', color: 'orange' },
+    2: { label: 'Trung bình', color: 'yellow' },
+    3: { label: 'Mạnh', color: 'blue' },
+    4: { label: 'Rất mạnh', color: 'green' }
   }
 
   return info[strength] || info[0]

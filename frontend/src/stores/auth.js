@@ -84,7 +84,7 @@ export const useAuthStore = defineStore('auth', {
           return { success: true, data: response.data.data }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Login failed'
+        this.error = error.response?.data?.message || 'Đăng nhập thất bại'
         return { success: false, error: this.error }
       } finally {
         this.isLoading = false
@@ -113,7 +113,7 @@ export const useAuthStore = defineStore('auth', {
           return { success: true }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || '2FA verification failed'
+        this.error = error.response?.data?.message || 'Xác thực 2FA thất bại'
         return { success: false, error: this.error }
       } finally {
         this.isLoading = false
@@ -153,7 +153,7 @@ export const useAuthStore = defineStore('auth', {
           return { success: true, data: response.data.data }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Registration failed'
+        this.error = error.response?.data?.message || 'Đăng ký thất bại'
         return { success: false, error: this.error }
       } finally {
         this.isLoading = false

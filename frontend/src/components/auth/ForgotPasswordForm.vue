@@ -13,7 +13,7 @@
 
     <form @submit.prevent="handleSubmit" v-else>
       <div class="form-group">
-        <label for="email">Email Address</label>
+        <label for="email">Địa chỉ Email</label>
         <InputText
           id="email"
           v-model="formData.email"
@@ -34,7 +34,7 @@
       <div class="form-actions">
         <Button
           type="submit"
-          label="Send Reset Link"
+          label="Gửi link đặt lại"
           :loading="loading"
           :disabled="loading"
           class="submit-btn"
@@ -42,7 +42,7 @@
         
         <Button
           type="button"
-          label="Back to Login"
+          label="Quay lại đăng nhập"
           severity="secondary"
           text
           @click="$router.push('/login')"
@@ -130,7 +130,7 @@ const handleSubmit = async () => {
         const validationErrors = error.response.data.errors;
         if (validationErrors) {
           Object.keys(validationErrors).forEach(key => {
-            if (errors.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(errors, key)) {
               errors[key] = validationErrors[key][0];
             }
           });

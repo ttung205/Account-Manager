@@ -13,7 +13,7 @@
 
     <form @submit.prevent="handleSubmit" v-else>
       <div class="form-group">
-        <label for="email">Email Address</label>
+        <label for="email">Địa chỉ Email</label>
         <InputText
           id="email"
           v-model="formData.email"
@@ -139,7 +139,7 @@ const handleSubmit = async () => {
         const validationErrors = error.response.data.errors;
         if (validationErrors) {
           Object.keys(validationErrors).forEach(key => {
-            if (errors.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(errors, key)) {
               errors[key] = validationErrors[key][0];
             }
           });

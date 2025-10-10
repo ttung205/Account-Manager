@@ -2,19 +2,19 @@
   <div class="auth-container">
     <div class="auth-card">
       <div class="auth-header">
-        <h1 class="auth-title">Create Account</h1>
-        <p class="auth-subtitle">Sign up to get started</p>
+        <h1 class="auth-title">Tạo tài khoản</h1>
+        <p class="auth-subtitle">Đăng ký để bắt đầu</p>
       </div>
 
       <form @submit.prevent="handleRegister" class="auth-form">
         <div class="field">
           <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-            Full Name
+            Họ và tên
           </label>
           <InputText
             id="name"
             v-model="form.name"
-            placeholder="Enter your full name"
+            placeholder="Nhập họ và tên của bạn"
             class="auth-input w-full"
             :class="{ 'p-invalid': errors.name }"
             required
@@ -24,13 +24,13 @@
 
         <div class="field">
           <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-            Email Address
+            Địa chỉ Email
           </label>
           <InputText
             id="email"
             v-model="form.email"
             type="email"
-            placeholder="Enter your email"
+            placeholder="Nhập email của bạn"
             class="auth-input w-full"
             :class="{ 'p-invalid': errors.email }"
             required
@@ -40,12 +40,12 @@
 
         <div class="field">
           <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-            Password
+            Mật khẩu
           </label>
           <Password
             id="password"
             v-model="form.password"
-            placeholder="Enter your password"
+            placeholder="Nhập mật khẩu của bạn"
             class="auth-input w-full"
             :class="{ 'p-invalid': errors.password }"
             :feedback="true"
@@ -67,12 +67,12 @@
 
         <div class="field">
           <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
-            Confirm Password
+            Xác nhận mật khẩu
           </label>
           <Password
             id="password_confirmation"
             v-model="form.password_confirmation"
-            placeholder="Confirm your password"
+            placeholder="Xác nhận mật khẩu của bạn"
             class="auth-input w-full"
             :class="{ 'p-invalid': errors.password_confirmation }"
             :feedback="false"
@@ -94,7 +94,7 @@
 
         <Button
           type="submit"
-          label="Create Account"
+          label="Tạo tài khoản"
           class="auth-button w-full text-center"
           :loading="authStore.isLoading"
           :disabled="authStore.isLoading"
@@ -106,8 +106,8 @@
       </form>
 
       <div class="auth-link mt-6">
-        Already have an account?
-        <router-link to="/login" class="ml-1">Sign in</router-link>
+        Đã có tài khoản?
+        <router-link to="/login" class="ml-1">Đăng nhập</router-link>
       </div>
     </div>
   </div>
@@ -137,27 +137,27 @@ const validateForm = () => {
   errors.value = {}
   
   if (!form.name) {
-    errors.value.name = 'Name is required'
+    errors.value.name = 'Họ và tên là bắt buộc'
   } else if (form.name.length < 2) {
-    errors.value.name = 'Name must be at least 2 characters'
+    errors.value.name = 'Họ và tên phải có ít nhất 2 ký tự'
   }
   
   if (!form.email) {
-    errors.value.email = 'Email is required'
+    errors.value.email = 'Email là bắt buộc'
   } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-    errors.value.email = 'Email is invalid'
+    errors.value.email = 'Email không hợp lệ'
   }
   
   if (!form.password) {
-    errors.value.password = 'Password is required'
+    errors.value.password = 'Mật khẩu là bắt buộc'
   } else if (form.password.length < 8) {
-    errors.value.password = 'Password must be at least 8 characters'
+    errors.value.password = 'Mật khẩu phải có ít nhất 8 ký tự'
   }
   
   if (!form.password_confirmation) {
-    errors.value.password_confirmation = 'Password confirmation is required'
+    errors.value.password_confirmation = 'Xác nhận mật khẩu là bắt buộc'
   } else if (form.password !== form.password_confirmation) {
-    errors.value.password_confirmation = 'Passwords do not match'
+    errors.value.password_confirmation = 'Mật khẩu không khớp'
   }
   
   return Object.keys(errors.value).length === 0

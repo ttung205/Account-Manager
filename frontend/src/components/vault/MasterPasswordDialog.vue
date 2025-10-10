@@ -2,7 +2,7 @@
   <Dialog
     :visible="visible"
     @update:visible="$emit('update:visible', $event)"
-    :header="isSetup ? 'Setup Master Password' : 'Enter Master Password'"
+    :header="isSetup ? 'Thiết lập Master Password' : 'Nhập Master Password'"
     :style="{ width: '500px' }"
     modal
     :closable="!isSetup"
@@ -13,8 +13,8 @@
         <div class="flex gap-3">
           <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
           <div class="text-sm text-blue-800">
-            <p class="font-medium mb-2">Create Your Master Password</p>
-            <p>This password will be used to encrypt all your stored passwords. Choose a strong, memorable password that you won't forget.</p>
+            <p class="font-medium mb-2">Tạo Master Password của bạn</p>
+            <p>Mật khẩu này sẽ được dùng để mã hóa tất cả các mật khẩu đã lưu. Hãy chọn một mật khẩu mạnh, dễ nhớ và không quên.</p>
           </div>
         </div>
       </div>
@@ -23,8 +23,8 @@
         <div class="flex gap-3">
           <i class="pi pi-shield text-amber-600 mt-0.5"></i>
           <div class="text-sm text-amber-800">
-            <p class="font-medium mb-1">Vault Locked</p>
-            <p>Enter your master password to unlock and decrypt your passwords.</p>
+            <p class="font-medium mb-1">Két đã khóa</p>
+            <p>Nhập master password để mở khóa và giải mã các mật khẩu của bạn.</p>
           </div>
         </div>
       </div>
@@ -47,15 +47,15 @@
         <Password
           id="masterPassword"
           v-model="password"
-          :placeholder="isSetup ? 'Create a strong master password' : 'Enter your master password'"
+          :placeholder="isSetup ? 'Tạo một master password mạnh' : 'Nhập master password của bạn'"
           class="w-full"
           :class="{ 'p-invalid': hasErrors }"
           :feedback="isSetup"
           toggleMask
-          :promptLabel="isSetup ? 'Enter a password' : ''"
-          :weakLabel="isSetup ? 'Weak' : ''"
-          :mediumLabel="isSetup ? 'Medium' : ''"
-          :strongLabel="isSetup ? 'Strong' : ''"
+          :promptLabel="isSetup ? 'Nhập mật khẩu' : ''"
+          :weakLabel="isSetup ? 'Yếu' : ''"
+          :mediumLabel="isSetup ? 'Trung bình' : ''"
+          :strongLabel="isSetup ? 'Mạnh' : ''"
           @keyup.enter="handleSubmit"
           :pt="{
             input: {
@@ -73,12 +73,12 @@
       <!-- Confirm Password (Setup only) -->
       <div v-if="isSetup" class="field">
         <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
-          Confirm Master Password
+          Xác nhận Master Password
         </label>
         <Password
           id="confirmPassword"
           v-model="confirmPassword"
-          placeholder="Confirm your master password"
+          placeholder="Xác nhận master password của bạn"
           class="w-full"
           :class="{ 'p-invalid': hasErrors }"
           :feedback="false"
@@ -100,7 +100,7 @@
       <!-- Custom Strength Indicator (Setup only) -->
       <div v-if="isSetup && password" class="field">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-medium text-gray-700">Password Strength</span>
+          <span class="text-sm font-medium text-gray-700">Độ mạnh mật khẩu</span>
           <span class="text-sm font-bold" :class="strengthColor">
             {{ strengthLabel }} ({{ strengthScore }}/100)
           </span>
@@ -118,7 +118,7 @@
         <div class="flex gap-2">
           <i class="pi pi-exclamation-triangle text-red-600 mt-0.5"></i>
           <div class="text-sm text-red-800">
-            <p class="font-medium mb-1">Please fix the following issues:</p>
+            <p class="font-medium mb-1">Vui lòng sửa các vấn đề sau:</p>
             <ul class="list-disc list-inside space-y-1">
               <li v-for="error in errors" :key="error">{{ error }}</li>
             </ul>
@@ -131,7 +131,7 @@
         <div class="flex gap-2">
           <i class="pi pi-exclamation-triangle text-yellow-600 mt-0.5"></i>
           <div class="text-sm text-yellow-800">
-            <p class="font-medium mb-1">Recommendations:</p>
+            <p class="font-medium mb-1">Khuyến nghị:</p>
             <ul class="list-disc list-inside space-y-1">
               <li v-for="warning in warnings" :key="warning">{{ warning }}</li>
             </ul>
@@ -144,13 +144,13 @@
         <div class="flex gap-2">
           <i class="pi pi-lightbulb text-green-600 mt-0.5"></i>
           <div class="text-sm text-green-800">
-            <p class="font-medium mb-1">Security Tips:</p>
+            <p class="font-medium mb-1">Mẹo bảo mật:</p>
             <ul class="list-disc list-inside space-y-1">
-              <li>Use at least 16 characters for maximum security</li>
-              <li>Include uppercase, lowercase, numbers, and symbols</li>
-              <li>Avoid personal information or common words</li>
-              <li>Consider using a passphrase with random words</li>
-              <li>Never share your master password with anyone</li>
+              <li>Sử dụng ít nhất 16 ký tự để đảm bảo an toàn tối đa</li>
+              <li>Bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt</li>
+              <li>Tránh thông tin cá nhân hoặc từ phổ biến</li>
+              <li>Cân nhắc sử dụng cụm từ với các từ ngẫu nhiên</li>
+              <li>Không bao giờ chia sẻ master password với bất kỳ ai</li>
             </ul>
           </div>
         </div>
@@ -161,8 +161,8 @@
         <div class="flex gap-2">
           <i class="pi pi-clock text-gray-600 mt-0.5"></i>
           <div class="text-sm text-gray-700">
-            <p class="font-medium mb-1">Auto-lock Security</p>
-            <p>Your vault will automatically lock after 15 minutes of inactivity, or 5 minutes when the tab is inactive.</p>
+            <p class="font-medium mb-1">Tự động khóa bảo mật</p>
+            <p>Két của bạn sẽ tự động khóa sau 15 phút không hoạt động, hoặc 5 phút khi tab không hoạt động.</p>
           </div>
         </div>
       </div>
@@ -172,14 +172,14 @@
       <div class="flex justify-between w-full">
         <Button
           v-if="!isSetup"
-          label="Cancel"
+          label="Hủy"
           severity="secondary"
           outlined
           @click="$emit('update:visible', false)"
         />
         <div v-else></div>
         <Button
-          :label="isSetup ? 'Create Master Password' : 'Unlock Vault'"
+          :label="isSetup ? 'Tạo Master Password' : 'Mở khóa két'"
           :loading="loading"
           :disabled="loading || (isSetup && (!password || !confirmPassword))"
           @click="handleSubmit"
@@ -192,7 +192,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useMasterPasswordStore } from '@/stores/masterPassword'
-import { calculatePasswordStrength, getPasswordStrengthInfo } from '@/utils/crypto'
+import { calculatePasswordStrength } from '@/utils/crypto'
 import Dialog from 'primevue/dialog'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
@@ -227,11 +227,11 @@ const strengthScore = computed(() => {
 
 const strengthLabel = computed(() => {
   const score = strengthScore.value
-  if (score < 30) return 'Very Weak'
-  if (score < 50) return 'Weak'
-  if (score < 70) return 'Fair'
-  if (score < 85) return 'Strong'
-  return 'Very Strong'
+  if (score < 30) return 'Rất yếu'
+  if (score < 50) return 'Yếu'
+  if (score < 70) return 'Trung bình'
+  if (score < 85) return 'Mạnh'
+  return 'Rất mạnh'
 })
 
 const strengthColor = computed(() => {
@@ -258,36 +258,36 @@ const validatePasswordStrength = (password) => {
   const warnings = []
 
   if (password.length < 12) {
-    errors.push('Master password must be at least 12 characters long')
+    errors.push('Master password phải có ít nhất 12 ký tự')
   }
 
   if (password.length < 16) {
-    warnings.push('Consider using at least 16 characters for better security')
+    warnings.push('Nên sử dụng ít nhất 16 ký tự để bảo mật tốt hơn')
   }
 
   if (!/[a-z]/.test(password)) {
-    errors.push('Must contain lowercase letters')
+    errors.push('Phải chứa chữ thường')
   }
 
   if (!/[A-Z]/.test(password)) {
-    errors.push('Must contain uppercase letters')
+    errors.push('Phải chứa chữ hoa')
   }
 
   if (!/\d/.test(password)) {
-    errors.push('Must contain numbers')
+    errors.push('Phải chứa số')
   }
 
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    warnings.push('Consider adding special characters for better security')
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
+    warnings.push('Nên thêm ký tự đặc biệt để bảo mật tốt hơn')
   }
 
   // Check for common patterns
   if (/(.)\1{2,}/.test(password)) {
-    warnings.push('Avoid repeating characters')
+    warnings.push('Tránh lặp lại ký tự')
   }
 
   if (/123|abc|qwe|password|admin/i.test(password)) {
-    errors.push('Avoid common words and patterns')
+    errors.push('Tránh các từ và mẫu phổ biến')
   }
 
   return {
@@ -302,18 +302,18 @@ const validatePassword = () => {
   warnings.value = []
 
   if (!password.value) {
-    errors.value.push('Master password is required')
+    errors.value.push('Master password là bắt buộc')
     return false
   }
 
   if (props.isSetup) {
     if (!confirmPassword.value) {
-      errors.value.push('Please confirm your master password')
+      errors.value.push('Vui lòng xác nhận master password')
       return false
     }
 
     if (password.value !== confirmPassword.value) {
-      errors.value.push('Passwords do not match')
+      errors.value.push('Mật khẩu không khớp')
       return false
     }
 
@@ -343,7 +343,7 @@ const handleSubmit = async () => {
         emit('success', { isSetup: true })
         emit('update:visible', false)
       } else {
-        errors.value = result.errors ? Object.values(result.errors).flat() : [result.error || 'Failed to setup master password']
+        errors.value = result.errors ? Object.values(result.errors).flat() : [result.error || 'Không thể thiết lập master password']
         warnings.value = []
       }
     } else {
@@ -353,12 +353,12 @@ const handleSubmit = async () => {
         emit('success', { isSetup: false })
         emit('update:visible', false)
       } else {
-        errors.value = [result.error || 'Invalid master password']
+        errors.value = [result.error || 'Master password không hợp lệ']
       }
     }
   } catch (error) {
     console.error('Master password error:', error)
-    errors.value = ['An error occurred. Please try again.']
+    errors.value = ['Đã xảy ra lỗi. Vui lòng thử lại.']
     emit('error', error)
   } finally {
     loading.value = false

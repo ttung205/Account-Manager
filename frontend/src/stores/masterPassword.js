@@ -25,7 +25,7 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
       if (storedPassword) {
         try {
           return atob(storedPassword)
-        } catch (e) {
+        } catch {
           return null
         }
       }
@@ -49,7 +49,7 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
           return { success: true, hasMasterPassword: this.hasMasterPassword }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Failed to check master password status'
+        this.error = error.response?.data?.message || 'Không thể kiểm tra trạng thái master password'
         return { success: false, error: this.error }
       } finally {
         this.isLoading = false
@@ -83,7 +83,7 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
           return { success: true, data: response.data.data }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Failed to create master password'
+        this.error = error.response?.data?.message || 'Không thể tạo master password'
         return { 
           success: false, 
           error: this.error,
@@ -119,7 +119,7 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
           return { success: true, data: response.data.data }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Failed to verify master password'
+        this.error = error.response?.data?.message || 'Không thể xác thực master password'
         return { success: false, error: this.error }
       } finally {
         this.isLoading = false
@@ -148,7 +148,7 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
           return { success: true, data: response.data.data }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Failed to update master password'
+        this.error = error.response?.data?.message || 'Không thể cập nhật master password'
         return { 
           success: false, 
           error: this.error,
@@ -188,7 +188,7 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
           return { success: true }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Failed to delete master password'
+        this.error = error.response?.data?.message || 'Không thể xóa master password'
         return { success: false, error: this.error }
       } finally {
         this.isLoading = false
