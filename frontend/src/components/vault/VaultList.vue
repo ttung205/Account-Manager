@@ -173,7 +173,18 @@
 
           <Column field="username" header="Tên đăng nhập" sortable>
             <template #body="{ data }">
-              <span class="font-mono text-sm">{{ data.username }}</span>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-sm">{{ data.username }}</span>
+                <Button
+                  :icon="copiedUsernames.has(data.id) ? 'pi pi-check' : 'pi pi-copy'"
+                  :severity="copiedUsernames.has(data.id) ? 'success' : 'secondary'"
+                  text
+                  rounded
+                  size="small"
+                  v-tooltip.top="'Sao chép tên đăng nhập'"
+                  @click="copyUsername(data)"
+                />
+              </div>
             </template>
           </Column>
 
@@ -353,6 +364,7 @@ const selectedAccount = ref(null)
 const accountToView = ref(null)
 const accountToDelete = ref(null)
 const copiedPasswords = ref(new Set()) // Track copied passwords by account ID
+const copiedUsernames = ref(new Set()) // Track copied usernames by account ID
 
 // Category options
 const categoryOptions = computed(() => [
@@ -571,6 +583,33 @@ const copyPassword = async (account) => {
         life: 3000
       })
     }
+  }
+}
+
+const copyUsername = async (account) => {
+  try {
+    await navigator.clipboard.writeText(account.username)
+    
+    // Add account ID to copied set
+    copiedUsernames.value.add(account.id)
+    // Remove after 2 seconds
+    setTimeout(() => {
+      copiedUsernames.value.delete(account.id)
+    }, 2000)
+    
+    toast.add({
+      severity: 'success',
+      summary: 'Đã sao chép!',
+      detail: 'Tên đăng nhập đã được sao chép vào clipboard',
+      life: 2000
+    })
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Lỗi',
+      detail: 'Không thể sao chép tên đăng nhập',
+      life: 3000
+    })
   }
 }
 
