@@ -182,7 +182,8 @@
               <div class="flex items-center gap-2">
                 <span class="font-mono text-sm">••••••••••</span>
                 <Button
-                  icon="pi pi-copy"
+                  :icon="copiedPasswords.has(data.id) ? 'pi pi-check' : 'pi pi-copy'"
+                  :severity="copiedPasswords.has(data.id) ? 'success' : 'secondary'"
                   text
                   rounded
                   size="small"
@@ -250,6 +251,13 @@
       v-model:visible="showAccountDialog"
       :account="selectedAccount"
       @saved="handleAccountSaved"
+    />
+
+    <!-- Account View Dialog -->
+    <AccountViewDialog
+      v-model:visible="showViewDialog"
+      :account="accountToView"
+      @edit="handleEditFromView"
     />
 
     <!-- Delete Confirmation Dialog -->
@@ -321,6 +329,7 @@ import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
 import Avatar from 'primevue/avatar'
 import AccountFormDialog from './AccountFormDialog.vue'
+import AccountViewDialog from './AccountViewDialog.vue'
 import MasterPasswordDialog from './MasterPasswordDialog.vue'
 import TwoFactorDialog from '../auth/TwoFactorDialog.vue'
 
@@ -334,13 +343,16 @@ const toast = useToast()
 const searchQuery = ref('')
 const selectedCategory = ref('all')
 const showAccountDialog = ref(false)
+const showViewDialog = ref(false)
 const showDeleteDialog = ref(false)
 const showMasterPasswordDialog = ref(false)
 const showTwoFactorDialog = ref(false)
 const pendingAction = ref(null) // Store pending action to retry after master password input
 const isFirstTimeSetup = ref(false)
 const selectedAccount = ref(null)
+const accountToView = ref(null)
 const accountToDelete = ref(null)
+const copiedPasswords = ref(new Set()) // Track copied passwords by account ID
 
 // Category options
 const categoryOptions = computed(() => [
@@ -453,8 +465,8 @@ const loadAccounts = async () => {
 }
 
 const viewAccount = (account) => {
-  selectedAccount.value = account
-  showAccountDialog.value = true
+  accountToView.value = account
+  showViewDialog.value = true
 }
 
 const editAccount = (account) => {
@@ -525,6 +537,13 @@ const copyPassword = async (account) => {
   console.log('Copy password result:', result)
   
   if (result.success) {
+    // Add account ID to copied set
+    copiedPasswords.value.add(account.id)
+    // Remove after 2 seconds
+    setTimeout(() => {
+      copiedPasswords.value.delete(account.id)
+    }, 2000)
+    
     toast.add({
       severity: 'success',
       summary: 'Đã sao chép!',
@@ -575,6 +594,29 @@ const handleAccountSaved = () => {
 const handleTwoFactorUpdated = () => {
   // Có thể thêm logic reload hoặc cập nhật UI nếu cần
   console.log('2FA settings updated')
+}
+
+const handleEditFromView = (account) => {
+  // Close view dialog and open edit dialog
+  showViewDialog.value = false
+  accountToView.value = null
+  
+  // Check if master password is still available
+  if (!masterPasswordStore.getMasterPassword) {
+    console.log('Master password not found when editing, showing dialog')
+    pendingAction.value = { type: 'editAccount', account }
+    showMasterPasswordDialog.value = true
+    toast.add({
+      severity: 'warn',
+      summary: 'Yêu cầu xác thực',
+      detail: 'Vui lòng nhập master password để chỉnh sửa tài khoản',
+      life: 3000
+    })
+    return
+  }
+  
+  selectedAccount.value = account
+  showAccountDialog.value = true
 }
 
 // Setup event listeners for master password timeout
