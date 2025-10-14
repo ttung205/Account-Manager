@@ -773,7 +773,7 @@ onMounted(async () => {
   // Check if master password is set
   if (!masterPasswordStore.isUnlocked) {
     // Determine if this is first time setup or just unlock
-    isFirstTimeSetup.value = !masterPasswordStore.hasMasterPassword`  `
+    isFirstTimeSetup.value = !masterPasswordStore.hasMasterPassword
     showMasterPasswordDialog.value = true
   } else {
     await loadAccounts()
