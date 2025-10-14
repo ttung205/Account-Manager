@@ -353,7 +353,9 @@ const handleSubmit = async () => {
         emit('success', { isSetup: false })
         emit('update:visible', false)
       } else {
+        // Error already cleared in store, just show message
         errors.value = [result.error || 'Master password không hợp lệ']
+        warnings.value = []
       }
     }
   } catch (error) {

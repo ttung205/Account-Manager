@@ -14,15 +14,27 @@
           
           <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-700">Xin chào, {{ authStore.user?.name }}</span>
+            
+            <!-- User Settings Menu -->
+            <Menu ref="userMenu" :model="userMenuItems" :popup="true" class="w-64">
+              <template #item="{ item, props }">
+                <a v-ripple class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50" v-bind="props.action">
+                  <i :class="item.icon" class="text-lg" :style="{ color: item.color }"></i>
+                  <span class="flex-1">{{ item.label }}</span>
+                </a>
+              </template>
+            </Menu>
+            
             <Button
-              label="Bảo mật 2FA"
-              icon="pi pi-shield"
+              icon="pi pi-user"
               severity="secondary"
               size="small"
               outlined
-              v-tooltip.bottom="'Cài đặt xác thực hai yếu tố'"
-              @click="showTwoFactorDialog = true"
+              rounded
+              v-tooltip.bottom="'Cài đặt tài khoản'"
+              @click="toggleUserMenu"
             />
+            
             <Button
               label="Đăng xuất"
               icon="pi pi-sign-out"
@@ -269,6 +281,7 @@
       v-model:visible="showViewDialog"
       :account="accountToView"
       @edit="handleEditFromView"
+      @needMasterPassword="handleNeedMasterPassword"
     />
 
     <!-- Delete Confirmation Dialog -->
@@ -319,6 +332,18 @@
       v-model:visible="showTwoFactorDialog"
       @updated="handleTwoFactorUpdated"
     />
+
+    <!-- Change Password Dialog -->
+    <ChangePasswordDialog
+      v-model:visible="showChangePasswordDialog"
+      @success="handlePasswordChanged"
+    />
+
+    <!-- Change Master Password Dialog -->
+    <ChangeMasterPasswordDialog
+      v-model:visible="showChangeMasterPasswordDialog"
+      @success="handleMasterPasswordChanged"
+    />
   </div>
 </template>
 
@@ -339,10 +364,13 @@ import Dropdown from 'primevue/dropdown'
 import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
 import Avatar from 'primevue/avatar'
+import Menu from 'primevue/menu'
 import AccountFormDialog from './AccountFormDialog.vue'
 import AccountViewDialog from './AccountViewDialog.vue'
 import MasterPasswordDialog from './MasterPasswordDialog.vue'
 import TwoFactorDialog from '../auth/TwoFactorDialog.vue'
+import ChangePasswordDialog from './ChangePasswordDialog.vue'
+import ChangeMasterPasswordDialog from './ChangeMasterPasswordDialog.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -358,6 +386,8 @@ const showViewDialog = ref(false)
 const showDeleteDialog = ref(false)
 const showMasterPasswordDialog = ref(false)
 const showTwoFactorDialog = ref(false)
+const showChangePasswordDialog = ref(false)
+const showChangeMasterPasswordDialog = ref(false)
 const pendingAction = ref(null) // Store pending action to retry after master password input
 const isFirstTimeSetup = ref(false)
 const selectedAccount = ref(null)
@@ -365,6 +395,39 @@ const accountToView = ref(null)
 const accountToDelete = ref(null)
 const copiedPasswords = ref(new Set()) // Track copied passwords by account ID
 const copiedUsernames = ref(new Set()) // Track copied usernames by account ID
+const userMenu = ref(null)
+
+// User menu items
+const userMenuItems = ref([
+  {
+    label: 'Bảo mật 2FA',
+    icon: 'pi pi-shield',
+    color: '#3b82f6',
+    command: () => {
+      showTwoFactorDialog.value = true
+    }
+  },
+  {
+    label: 'Đổi mật khẩu',
+    icon: 'pi pi-key',
+    color: '#10b981',
+    command: () => {
+      showChangePasswordDialog.value = true
+    }
+  },
+  {
+    label: 'Đổi Master Password',
+    icon: 'pi pi-lock',
+    color: '#f59e0b',
+    command: () => {
+      showChangeMasterPasswordDialog.value = true
+    }
+  }
+])
+
+const toggleUserMenu = (event) => {
+  userMenu.value.toggle(event)
+}
 
 // Category options
 const categoryOptions = computed(() => [
@@ -434,14 +497,15 @@ const handleMasterPasswordSuccess = async (event) => {
       const action = pendingAction.value
       pendingAction.value = null // Clear pending action
       
-      console.log('Retrying pending action:', action.type)
-      
       if (action.type === 'copyPassword') {
         // Retry copy password
         await copyPassword(action.account)
       } else if (action.type === 'editAccount') {
         // Retry edit account
         editAccount(action.account)
+      } else if (action.type === 'viewPassword') {
+        // Re-open view dialog to allow viewing password
+        viewAccount(action.account)
       }
     }
   } catch {
@@ -484,7 +548,6 @@ const viewAccount = (account) => {
 const editAccount = (account) => {
   // Check if master password is still available (needed to decrypt existing password)
   if (!masterPasswordStore.getMasterPassword) {
-    console.log('Master password not found when editing, showing dialog')
     // Store pending action to retry after master password input
     pendingAction.value = { type: 'editAccount', account }
     showMasterPasswordDialog.value = true
@@ -532,7 +595,6 @@ const deleteAccount = async () => {
 const copyPassword = async (account) => {
   // Check if master password is still available
   if (!masterPasswordStore.getMasterPassword) {
-    console.log('Master password not found, showing dialog')
     // Store pending action to retry after master password input
     pendingAction.value = { type: 'copyPassword', account }
     showMasterPasswordDialog.value = true
@@ -546,7 +608,6 @@ const copyPassword = async (account) => {
   }
   
   const result = await accountsStore.copyPassword(account)
-  console.log('Copy password result:', result)
   
   if (result.success) {
     // Add account ID to copied set
@@ -565,7 +626,6 @@ const copyPassword = async (account) => {
   } else {
     // If decryption failed or master password invalid, need to re-authenticate
     if (result.error.includes('giải mã') || result.error.includes('không hợp lệ') || result.error.includes('Master password')) {
-      console.log('Master password invalid, showing dialog')
       // Store pending action to retry after master password input
       pendingAction.value = { type: 'copyPassword', account }
       showMasterPasswordDialog.value = true
@@ -632,7 +692,32 @@ const handleAccountSaved = () => {
 
 const handleTwoFactorUpdated = () => {
   // Có thể thêm logic reload hoặc cập nhật UI nếu cần
-  console.log('2FA settings updated')
+}
+
+const handlePasswordChanged = () => {
+}
+
+const handleMasterPasswordChanged = () => {
+  // Reload accounts as they might have been re-encrypted
+  loadAccounts()
+}
+
+const handleNeedMasterPassword = (data) => {
+  // Close view dialog first
+  showViewDialog.value = false
+  
+  // Store pending action
+  pendingAction.value = data
+  
+  // Show master password dialog
+  showMasterPasswordDialog.value = true
+  
+  toast.add({
+    severity: 'warn',
+    summary: 'Yêu cầu xác thực',
+    detail: 'Vui lòng nhập master password để tiếp tục',
+    life: 3000
+  })
 }
 
 const handleEditFromView = (account) => {
@@ -642,7 +727,6 @@ const handleEditFromView = (account) => {
   
   // Check if master password is still available
   if (!masterPasswordStore.getMasterPassword) {
-    console.log('Master password not found when editing, showing dialog')
     pendingAction.value = { type: 'editAccount', account }
     showMasterPasswordDialog.value = true
     toast.add({
@@ -689,8 +773,7 @@ onMounted(async () => {
   // Check if master password is set
   if (!masterPasswordStore.isUnlocked) {
     // Determine if this is first time setup or just unlock
-    isFirstTimeSetup.value = !masterPasswordStore.hasMasterPassword
-    console.log('Master password not unlocked. Is first time setup:', isFirstTimeSetup.value)
+    isFirstTimeSetup.value = !masterPasswordStore.hasMasterPassword`  `
     showMasterPasswordDialog.value = true
   } else {
     await loadAccounts()

@@ -130,11 +130,9 @@ export const useAccountsStore = defineStore('accounts', {
       this.error = null
 
       try {
-        console.log('Creating account with data:', accountData)
         
         // Encrypt password before sending
         const encryptedPassword = await encrypt(accountData.password, masterPassword)
-        console.log('Password encrypted:', encryptedPassword)
 
         // Encrypt note if provided
         let encryptedNote = null
@@ -152,14 +150,11 @@ export const useAccountsStore = defineStore('accounts', {
           favorite: accountData.favorite || false
         }
 
-        console.log('Sending payload:', payload)
 
         const response = await axios.post('/api/accounts', payload)
-        console.log('Response from server:', response.data)
 
         if (response.data.success) {
           const newAccount = response.data.data.account
-          console.log('New account created:', newAccount)
           
           this.accounts.push({
             ...newAccount,
@@ -267,6 +262,8 @@ export const useAccountsStore = defineStore('accounts', {
       const masterPasswordStore = useMasterPasswordStore()
       const masterPassword = masterPasswordStore.getMasterPassword
       if (!masterPassword) {
+        // Clear any stale data
+        masterPasswordStore.clearMasterPassword()
         throw new Error('Cần có Master password')
       }
 
@@ -281,10 +278,10 @@ export const useAccountsStore = defineStore('accounts', {
       } catch (error) {
         console.error('Decryption error:', error)
         
-        // Clear master password on decryption failure - it's likely wrong/expired
+        // Clear master password on decryption failure - it's likely wrong/expired/changed
         masterPasswordStore.clearMasterPassword()
         
-        throw new Error('Master password không hợp lệ. Vui lòng nhập lại.')
+        throw new Error('Master password không hợp lệ hoặc đã thay đổi. Vui lòng nhập lại.')
       }
     },
 
@@ -292,7 +289,13 @@ export const useAccountsStore = defineStore('accounts', {
     async getDecryptedNote(account) {
       const masterPasswordStore = useMasterPasswordStore()
       const masterPassword = masterPasswordStore.getMasterPassword
-      if (!masterPassword || !account.encrypted_note) {
+      if (!masterPassword) {
+        // Clear any stale data
+        masterPasswordStore.clearMasterPassword()
+        return null
+      }
+      
+      if (!account.encrypted_note) {
         return null
       }
 
@@ -305,7 +308,11 @@ export const useAccountsStore = defineStore('accounts', {
         
         return note
       } catch (error) {
-        console.error('Decryption error:', error)
+        console.error('Note decryption error:', error)
+        
+        // Clear master password on decryption failure
+        masterPasswordStore.clearMasterPassword()
+        
         return null
       }
     },

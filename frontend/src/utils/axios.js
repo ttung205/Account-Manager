@@ -37,6 +37,14 @@ axios.interceptors.response.use(
           router.push({ name: 'login', query: { expired: 'true' } })
         }
       }
+      // Check for invalid master password (should not logout)
+      else if (
+        error.response.status === 401 &&
+        error.response.data?.error_code === 'INVALID_MASTER_PASSWORD'
+      ) {
+        // Don't logout user, just let the component handle the error
+        // This is a master password verification failure, not an auth failure
+      }
       // Check for any other 401 errors
       else if (error.response.status === 401) {
         const authStore = useAuthStore()

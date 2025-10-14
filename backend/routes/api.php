@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/verify-2fa', [AuthController::class, 'verify2FA']);
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
     
     // Account management (specific routes MUST come before apiResource)
     Route::get('/accounts/statistics', [AccountController::class, 'statistics']);

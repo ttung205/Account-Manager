@@ -195,7 +195,7 @@ const props = defineProps({
   account: Object
 })
 
-const emit = defineEmits(['update:visible', 'edit'])
+const emit = defineEmits(['update:visible', 'edit', 'needMasterPassword'])
 
 const accountsStore = useAccountsStore()
 const toast = useToast()
@@ -230,6 +230,11 @@ const togglePasswordVisibility = async () => {
       decryptedPassword.value = await accountsStore.getDecryptedPassword(props.account)
       showPassword.value = true
     } catch (error) {
+      // Check if error is related to master password
+      if (error.message.includes('Master password') || error.message.includes('giải mã')) {
+        emit('needMasterPassword', { type: 'viewPassword', account: props.account })
+      }
+      
       toast.add({
         severity: 'error',
         summary: 'Lỗi',
@@ -278,7 +283,19 @@ const copyPassword = async () => {
       setTimeout(() => {
         copiedPassword.value = false
       }, 2000)
+      
+      toast.add({
+        severity: 'success',
+        summary: 'Đã sao chép!',
+        detail: 'Mật khẩu đã được sao chép vào clipboard',
+        life: 2000
+      })
     } else {
+      // Check if error is related to master password
+      if (result.error.includes('Master password') || result.error.includes('giải mã')) {
+        emit('needMasterPassword', { type: 'copyPassword', account: props.account })
+      }
+      
       toast.add({
         severity: 'error',
         summary: 'Lỗi',

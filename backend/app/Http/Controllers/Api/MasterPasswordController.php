@@ -136,13 +136,15 @@ class MasterPasswordController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid master password'
+                'message' => 'Invalid master password',
+                'error_code' => 'INVALID_MASTER_PASSWORD'
             ], 401);
         }
     }
 
     /**
      * Update master password.
+     * This endpoint also handles re-encryption of all account passwords.
      */
     public function update(Request $request): JsonResponse
     {
@@ -152,6 +154,9 @@ class MasterPasswordController extends Controller
             'current_password' => 'required|string',
             'new_password' => 'required|string|min:12',
             'new_password_confirmation' => 'required|string|same:new_password',
+            're_encrypted_passwords' => 'array', // Array of re-encrypted passwords
+            're_encrypted_passwords.*.account_id' => 'required|integer|exists:accounts,id',
+            're_encrypted_passwords.*.encrypted_password' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -175,23 +180,45 @@ class MasterPasswordController extends Controller
         if (!$masterPassword->verifyPassword($request->current_password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Current master password is incorrect'
+                'message' => 'Current master password is incorrect',
+                'error_code' => 'INVALID_MASTER_PASSWORD'
             ], 401);
         }
 
         try {
+            \DB::beginTransaction();
+
+            // Update all account passwords with re-encrypted versions
+            if ($request->has('re_encrypted_passwords') && is_array($request->re_encrypted_passwords)) {
+                foreach ($request->re_encrypted_passwords as $reEncryptedPassword) {
+                    $account = \App\Models\Account::where('id', $reEncryptedPassword['account_id'])
+                        ->where('user_id', $user->id)
+                        ->first();
+
+                    if ($account) {
+                        $account->encrypted_password = $reEncryptedPassword['encrypted_password'];
+                        $account->save();
+                    }
+                }
+            }
+
             // Update with new password
             $updatedMasterPassword = MasterPassword::setForUser($user->id, $request->new_password);
+
+            \DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Master password updated successfully',
                 'data' => [
                     'updated_at' => $updatedMasterPassword->updated_at,
+                    're_encrypted_count' => count($request->re_encrypted_passwords ?? []),
                 ]
             ]);
 
         } catch (\Exception $e) {
+            \DB::rollBack();
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update master password',
@@ -233,7 +260,8 @@ class MasterPasswordController extends Controller
         if (!$masterPassword->verifyPassword($request->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Master password is incorrect'
+                'message' => 'Master password is incorrect',
+                'error_code' => 'INVALID_MASTER_PASSWORD'
             ], 401);
         }
 

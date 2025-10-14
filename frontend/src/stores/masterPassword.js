@@ -119,6 +119,9 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
           return { success: true, data: response.data.data }
         }
       } catch (error) {
+        // Clear master password from storage on verification failure
+        this.clearMasterPassword()
+        
         this.error = error.response?.data?.message || 'Không thể xác thực master password'
         return { success: false, error: this.error }
       } finally {
@@ -128,27 +131,95 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
 
     /**
      * Update master password
+     * This will also re-encrypt all account passwords with the new master password
      */
     async updateMasterPassword(currentPassword, newPassword, confirmPassword) {
       this.isLoading = true
       this.error = null
 
       try {
+        // Import accounts store to get all accounts
+        const { useAccountsStore } = await import('./accounts')
+        const accountsStore = useAccountsStore()
+        
+        // Import crypto utilities
+        const { decrypt, encrypt } = await import('../utils/crypto')
+        
+        // Get all accounts
+        await accountsStore.fetchAccounts()
+        const accounts = accountsStore.accounts
+        
+        // Re-encrypt all passwords
+        const reEncryptedPasswords = []
+        
+        for (const account of accounts) {
+          // Use _encrypted_password which is the stored encrypted version
+          const encryptedPasswordField = account._encrypted_password || account.encrypted_password
+          
+          if (encryptedPasswordField) {
+            try {
+              // Decrypt with current (old) password
+              const decryptedPassword = await decrypt(
+                JSON.parse(encryptedPasswordField),
+                currentPassword
+              )
+              
+              // Encrypt with new password
+              const newEncryptedPassword = await encrypt(decryptedPassword, newPassword)
+              
+              reEncryptedPasswords.push({
+                account_id: account.id,
+                encrypted_password: JSON.stringify(newEncryptedPassword)
+              })
+            } catch (error) {
+              // If we can't decrypt with current password, it means the current password is wrong
+              throw new Error('Không thể giải mã mật khẩu với master password hiện tại. Vui lòng kiểm tra lại.')
+            }
+          }
+        }
+        
+        // Update master password with re-encrypted passwords
         const response = await axios.put('/api/master-password/update', {
           current_password: currentPassword,
           new_password: newPassword,
-          new_password_confirmation: confirmPassword
+          new_password_confirmation: confirmPassword,
+          re_encrypted_passwords: reEncryptedPasswords
         })
 
         if (response.data.success) {
-          // Update stored password in both memory and localStorage
-          secureStorage.set('masterPassword', newPassword, 15 * 60 * 1000)
-          localStorage.setItem('mp', btoa(newPassword))
+          // Clear ALL storage and state to prevent any sync issues
+          secureStorage.clear()
           
-          return { success: true, data: response.data.data }
+          // Clear localStorage master password data (but keep auth token)
+          localStorage.removeItem('mp')
+          localStorage.removeItem('masterPasswordVerified')
+          localStorage.removeItem('masterPasswordVerifiedAt')
+          
+          // Clear accounts cache
+          accountsStore.accounts = []
+          
+          // Reset master password store state
+          this.isVerified = false
+          this.verifiedAt = null
+          
+          // Reload page to ensure everything is fresh and user re-enters new master password
+          // This is the safest approach to avoid any cache/timing issues
+          setTimeout(() => {
+            window.location.reload()
+          }, 500)
+          
+          return { 
+            success: true, 
+            data: response.data.data,
+            reEncryptedCount: reEncryptedPasswords.length,
+            willReload: true
+          }
         }
       } catch (error) {
-        this.error = error.response?.data?.message || 'Không thể cập nhật master password'
+        // Clear master password from storage on update failure
+        this.clearMasterPassword()
+        
+        this.error = error.response?.data?.message || error.message || 'Không thể cập nhật master password'
         return { 
           success: false, 
           error: this.error,
@@ -157,6 +228,23 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
       } finally {
         this.isLoading = false
       }
+    },
+
+    /**
+     * Change master password (alias for updateMasterPassword)
+     */
+    async changeMasterPassword(currentPassword, newPassword, confirmPassword) {
+      const result = await this.updateMasterPassword(currentPassword, newPassword, confirmPassword)
+      
+      if (result.success) {
+        return {
+          success: true,
+          message: `Master password đã được thay đổi thành công. ${result.reEncryptedCount} mật khẩu đã được mã hóa lại.`,
+          data: result.data
+        }
+      }
+      
+      return result
     },
 
     /**
@@ -231,7 +319,7 @@ export const useMasterPasswordStore = defineStore('masterPassword', {
             const password = atob(storedPassword)
             secureStorage.set('masterPassword', password, 15 * 60 * 1000)
           } catch (e) {
-            console.error('Failed to restore master password:', e)
+            // Silently fail, user will need to re-enter master password
           }
         }
       }
