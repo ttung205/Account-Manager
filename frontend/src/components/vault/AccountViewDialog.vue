@@ -79,7 +79,7 @@
         </label>
         <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
           <a 
-            :href="account.website_url" 
+            :href="getFullUrl(account.website_url)" 
             target="_blank" 
             class="text-blue-600 hover:underline flex-1 truncate"
           >
@@ -134,14 +134,6 @@
             />
           </div>
           <span v-else class="text-gray-400 italic">Không có ghi chú</span>
-        </div>
-      </div>
-
-      <!-- Favorite Status -->
-      <div class="field">
-        <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-          <i :class="account.favorite ? 'pi pi-star-fill text-yellow-500' : 'pi pi-star text-gray-400'" class="text-xl"></i>
-          <span class="font-medium">{{ account.favorite ? 'Đã yêu thích' : 'Chưa yêu thích' }}</span>
         </div>
       </div>
 
@@ -323,8 +315,20 @@ const copyToClipboard = async (text, type) => {
   }
 }
 
+const getFullUrl = (url) => {
+  if (!url) return ''
+  
+  // Add https:// if URL doesn't have a protocol
+  if (!url.match(/^https?:\/\//i)) {
+    return 'https://' + url
+  }
+  
+  return url
+}
+
 const openWebsite = () => {
-  window.open(props.account.website_url, '_blank')
+  const url = getFullUrl(props.account.website_url)
+  window.open(url, '_blank')
 }
 
 const handleEdit = () => {

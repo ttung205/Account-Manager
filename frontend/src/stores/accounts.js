@@ -13,7 +13,7 @@ export const useAccountsStore = defineStore('accounts', {
     },
     loading: false,
     error: null,
-    categories: ['Chung', 'Xã hội', 'Ngân hàng', 'Email', 'Công việc', 'Mua sắm', 'Giải trí']
+    categories: ['Chung', 'Mạng xã hội', 'Ngân hàng', 'Email', 'Công việc', 'Mua sắm', 'Giải trí']
   }),
 
   getters: {
