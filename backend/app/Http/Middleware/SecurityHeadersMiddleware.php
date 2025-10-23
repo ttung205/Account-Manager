@@ -45,10 +45,13 @@ class SecurityHeadersMiddleware
         );
 
         // Strict-Transport-Security (HSTS) - Force HTTPS
+        // Only set HSTS when using HTTPS to avoid browser warnings
         // max-age=31536000 (1 year), includeSubDomains, preload
-        $response->headers->set('Strict-Transport-Security', 
-            'max-age=31536000; includeSubDomains; preload'
-        );
+        if ($request->isSecure()) {
+            $response->headers->set('Strict-Transport-Security', 
+                'max-age=31536000; includeSubDomains; preload'
+            );
+        }
 
         return $response;
     }

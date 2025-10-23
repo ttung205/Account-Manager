@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Apply security headers to all API requests
         $middleware->api(prepend: [
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
+            \App\Http\Middleware\SecureCacheMiddleware::class,
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
         
