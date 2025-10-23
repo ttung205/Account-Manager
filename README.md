@@ -44,13 +44,15 @@ npm run dev
 
 ## 🔐 Security Features
 
-- ✅ Client-side encryption (AES-GCM/XChaCha20)
-- ✅ Zero-knowledge architecture
-- ✅ Argon2id password hashing
-- ✅ 2FA (TOTP) support
-- ✅ Rate limiting & lockout
-- ✅ Security headers (CSP, HSTS)
-- ✅ Auto-clear clipboard
+- ✅ **Client-side encryption** (AES-GCM/XChaCha20)
+- ✅ **Zero-knowledge architecture** (server never sees plaintext)
+- ✅ **Argon2id password hashing** (OWASP recommended)
+- ✅ **2FA (TOTP) support** with backup codes
+- ✅ **Rate limiting & account lockout**
+- ✅ **Security headers** (CSP, X-Frame-Options, X-Content-Type-Options)
+- ✅ **Auto-clear clipboard** after 30 seconds
+- ✅ **Master password in RAM only** (15-minute session)
+- ✅ **OWASP ZAP tested** (Level 1 alerts fixed)
 
 ## 📁 Project Structure
 
@@ -79,10 +81,26 @@ account-manager/
 
 ## 🧪 Demo Attacks & Defenses
 
-- Brute force → Rate limiting
-- XSS → CSP protection
-- SQL Injection → Query Builder
-- Session hijack → Secure sessions
+- **Brute force** → Rate limiting + Account lockout
+- **XSS** → Content Security Policy (CSP)
+- **Clickjacking** → X-Frame-Options header
+- **SQL Injection** → Laravel Query Builder + prepared statements
+- **Session hijack** → Secure sessions + HttpOnly cookies
+- **MIME sniffing** → X-Content-Type-Options header
+
+### OWASP ZAP Scan Results
+- ✅ **Level 1 (URGENT)**: Fixed - CSP, X-Frame-Options
+- ⏳ **Level 2 (HIGH)**: Pending - HSTS for production
+- ⏳ **Level 3 (MEDIUM)**: Pending - Code review
+
+See `docs/OWASP_ZAP_FIX_LEVEL_1.md` for details.
+
+## 📚 Documentation
+
+- `docs/SECURITY_HEADERS.md` - Security headers implementation
+- `docs/SECURITY_FIX_REPORT.md` - Security vulnerabilities fixed
+- `docs/OWASP_ZAP_FIX_LEVEL_1.md` - OWASP ZAP scan fixes
+- `docs/description_account_manager.md` - Project description
 
 ## 📝 License
 

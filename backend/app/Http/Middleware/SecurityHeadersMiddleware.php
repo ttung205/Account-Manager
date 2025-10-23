@@ -15,6 +15,35 @@ class SecurityHeadersMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        return $next($request);
+        $response = $next($request);
+
+        // Content Security Policy (CSP) - Prevent XSS attacks
+        $response->headers->set('Content-Security-Policy', 
+            "default-src 'self'; " .
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " .
+            "style-src 'self' 'unsafe-inline'; " .
+            "img-src 'self' data: https:; " .
+            "font-src 'self' data:; " .
+            "connect-src 'self'; " .
+            "frame-ancestors 'none'; " .
+            "base-uri 'self'; " .
+            "form-action 'self'"
+        );
+
+        // X-Frame-Options - Prevent clickjacking attacks
+        $response->headers->set('X-Frame-Options', 'DENY');
+
+        // X-Content-Type-Options - Prevent MIME type sniffing
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+
+        // Referrer-Policy - Control referrer information
+        $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+        // Permissions-Policy - Control browser features
+        $response->headers->set('Permissions-Policy', 
+            'geolocation=(), microphone=(), camera=(), payment=()'
+        );
+
+        return $response;
     }
 }
