@@ -87,13 +87,15 @@ account-manager/
 - **SQL Injection** → Laravel Query Builder + prepared statements
 - **Session hijack** → Secure sessions + HttpOnly cookies
 - **MIME sniffing** → X-Content-Type-Options header
+- **SSL Stripping** → HSTS (Strict-Transport-Security)
+
 
 ### OWASP ZAP Scan Results
-- ✅ **Level 1 (URGENT)**: Fixed - CSP, X-Frame-Options
-- ⏳ **Level 2 (HIGH)**: Pending - HSTS for production
-- ⏳ **Level 3 (MEDIUM)**: Pending - Code review
+- ✅ **Level 1 (URGENT)**: FIXED - CSP, X-Frame-Options, X-Content-Type-Options
+- ✅ **Level 2 (HIGH)**: FIXED - HSTS (Strict-Transport-Security)
+- ⏳ **Level 3 (MEDIUM)**: Pending - Additional security improvements
 
-See `docs/OWASP_ZAP_FIX_LEVEL_1.md` for details.
+See `docs/SECURITY_HEADERS.md` for complete details.
 
 ## 📚 Documentation
 

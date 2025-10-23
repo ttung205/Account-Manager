@@ -44,6 +44,12 @@ class SecurityHeadersMiddleware
             'geolocation=(), microphone=(), camera=(), payment=()'
         );
 
+        // Strict-Transport-Security (HSTS) - Force HTTPS
+        // max-age=31536000 (1 year), includeSubDomains, preload
+        $response->headers->set('Strict-Transport-Security', 
+            'max-age=31536000; includeSubDomains; preload'
+        );
+
         return $response;
     }
 }

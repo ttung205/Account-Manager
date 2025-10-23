@@ -125,6 +125,43 @@ Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
 
 ---
 
+### 6. **Strict-Transport-Security (HSTS)** 🆕
+**Mục đích**: Force browser luôn sử dụng HTTPS, ngăn chặn downgrade attacks
+
+```http
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+```
+
+**Chi tiết**:
+- `max-age=31536000` - Browser nhớ trong 1 năm (365 days)
+- `includeSubDomains` - Áp dụng cho tất cả subdomains
+- `preload` - Cho phép đưa vào HSTS preload list của browsers
+
+**Bảo vệ khỏi**:
+- ✅ SSL Stripping attacks (downgrade HTTPS → HTTP)
+- ✅ Man-in-the-Middle (MITM) attacks
+- ✅ Session hijacking qua unsecure connection
+- ✅ Cookie theft trên HTTP connection
+
+**Cách hoạt động**:
+1. Lần đầu user visit site qua HTTPS → Browser nhận HSTS header
+2. Từ giờ, browser TỰ ĐỘNG chuyển mọi HTTP request → HTTPS
+3. Kể cả khi user gõ `http://` hoặc click HTTP link
+4. Không thể bypass (không có "proceed anyway" button)
+
+**HSTS Preload List**:
+- Submit domain lên [hstspreload.org](https://hstspreload.org/)
+- Browsers (Chrome, Firefox, Safari...) built-in HSTS cho domain này
+- Ngay cả lần đầu visit, browser đã enforce HTTPS
+
+**⚠️ Lưu ý quan trọng**:
+- Chỉ enable khi site **ĐÃ CÓ HTTPS** hoàn toàn
+- Nếu HTTPS bị lỗi → Users không thể access site trong `max-age` period
+- Nên test với `max-age` ngắn trước (ví dụ: 300 = 5 phút)
+- Production nên dùng 1-2 năm: `max-age=63072000` (2 years)
+
+---
+
 ## 📁 Implementation
 
 ### File: `backend/app/Http/Middleware/SecurityHeadersMiddleware.php`
@@ -140,6 +177,7 @@ public function handle(Request $request, Closure $next): Response
     $response->headers->set('X-Content-Type-Options', 'nosniff');
     $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
     $response->headers->set('Permissions-Policy', '...');
+    $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
 
     return $response;
 }
@@ -173,6 +211,7 @@ public function handle(Request $request, Closure $next): Response
 - ✅ **X-Content-Type-Options** - FIXED
 - ✅ **Referrer-Policy** - BONUS (best practice)
 - ✅ **Permissions-Policy** - BONUS (best practice)
+- ✅ **Strict-Transport-Security (HSTS)** - FIXED (Level 2)
 
 ---
 
@@ -191,6 +230,7 @@ X-Frame-Options: DENY
 X-Content-Type-Options: nosniff
 Referrer-Policy: strict-origin-when-cross-origin
 Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 ```
 
 ### 2. Test bằng browser DevTools:
@@ -239,13 +279,41 @@ Sau khi deploy, nên:
 
 Để tăng cường security hơn nữa:
 
-1. **Strict-Transport-Security (HSTS)** - Đã có trong roadmap
-2. **Certificate Transparency** - Require CT logs
-3. **Subresource Integrity (SRI)** - Verify CDN resources
-4. **Upgrade-Insecure-Requests** - Auto upgrade HTTP to HTTPS
+1. ✅ **Strict-Transport-Security (HSTS)** - COMPLETED (Level 2)
+2. **HSTS Preload Submission** - Submit domain lên hstspreload.org
+3. **Certificate Transparency** - Require CT logs
+4. **Subresource Integrity (SRI)** - Verify CDN resources
+5. **Upgrade-Insecure-Requests** - Auto upgrade HTTP to HTTPS
+
+---
+
+## 🚀 HSTS Preload Configuration
+
+Để submit domain lên HSTS preload list:
+
+### Yêu cầu:
+1. ✅ Serve valid certificate
+2. ✅ Redirect HTTP → HTTPS (same host)
+3. ✅ Serve HSTS header trên base domain với:
+   - `max-age` >= 31536000 (1 year)
+   - `includeSubDomains` directive
+   - `preload` directive
+4. ✅ Serve HSTS header trên tất cả subdomains
+
+### Cách submit:
+1. Test site: https://hstspreload.org/?domain=yourdomain.com
+2. Fix mọi issues nếu có
+3. Submit domain
+4. Đợi browsers update preload list (vài tháng)
+
+### ⚠️ Lưu ý:
+- **KHÔNG THỂ UNDO dễ dàng!** Removal khỏi preload list mất rất lâu
+- Chỉ submit khi **CHẮC CHẮN** site sẽ dùng HTTPS mãi mãi
+- Test kỹ trước khi submit
 
 ---
 
 *Last updated: 2025-10-23*
 *Security Audit: OWASP ZAP*
+*Level 2 (HSTS): COMPLETED ✅*
 
