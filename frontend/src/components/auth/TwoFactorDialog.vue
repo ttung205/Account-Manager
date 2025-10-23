@@ -296,16 +296,13 @@ const loadTwoFactorStatus = async () => {
   loading.value = true
   try {
     const response = await axios.get('/api/2fa/status')
-    console.log('2FA Status Response:', response.data)
     // Backend trả về response.data.data
     const data = response.data.data || response.data
     twoFactorStatus.value = {
       enabled: data.is_enabled || false,
       enabled_at: data.enabled_at || null
     }
-    console.log('2FA Status Parsed:', twoFactorStatus.value)
   } catch (error) {
-    console.error('Error loading 2FA status:', error)
     toast.add({
       severity: 'error',
       summary: 'Lỗi',
@@ -345,7 +342,6 @@ const initSetup = async () => {
       life: 3000
     })
   } catch (error) {
-    console.error('Error setting up 2FA:', error)
     toast.add({
       severity: 'error',
       summary: 'Lỗi',
@@ -511,7 +507,6 @@ const enableTwoFactor = async () => {
     
     emit('updated')
   } catch (error) {
-    console.error('Error enabling 2FA:', error)
     toast.add({
       severity: 'error',
       summary: 'Lỗi',
@@ -555,7 +550,6 @@ const disableTwoFactor = async () => {
     emit('updated')
     handleClose()
   } catch (error) {
-    console.error('Error disabling 2FA:', error)
     toast.add({
       severity: 'error',
       summary: 'Lỗi',

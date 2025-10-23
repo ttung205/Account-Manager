@@ -346,12 +346,19 @@ export class MasterPasswordManager {
         testDataBuffer
       )
       
+      // Create hash of the test data for verification
+      // SECURITY FIX: Only store the hash, NOT the plaintext
+      const testDataHash = await window.crypto.subtle.digest(
+        'SHA-256',
+        testDataBuffer
+      )
+      
       // Store verification data in localStorage
       const verificationData = {
         salt: Array.from(salt),
         iv: Array.from(iv),
         ciphertext: Array.from(new Uint8Array(ciphertext)),
-        testData: testData
+        testDataHash: Array.from(new Uint8Array(testDataHash)) // Store hash instead of plaintext
       }
       
       localStorage.setItem('masterPasswordVerification', JSON.stringify(verificationData))
@@ -379,7 +386,13 @@ export class MasterPasswordManager {
       const salt = new Uint8Array(verificationData.salt)
       const iv = new Uint8Array(verificationData.iv)
       const ciphertext = new Uint8Array(verificationData.ciphertext)
-      const expectedTestData = verificationData.testData
+      
+      // SECURITY FIX: Support both old format (testData) and new format (testDataHash)
+      // This ensures backward compatibility during migration
+      const expectedTestDataHash = verificationData.testDataHash 
+        ? new Uint8Array(verificationData.testDataHash)
+        : null
+      const expectedTestDataLegacy = verificationData.testData // For backward compatibility
       
       // Derive key with provided password
       const encoder = new TextEncoder()
@@ -416,11 +429,28 @@ export class MasterPasswordManager {
         ciphertext
       )
       
-      const decoder = new TextDecoder()
-      const decryptedData = decoder.decode(decryptedBuffer)
+      // Hash the decrypted data
+      const decryptedDataHash = await window.crypto.subtle.digest(
+        'SHA-256',
+        decryptedBuffer
+      )
       
-      // Check if decrypted data matches expected test data
-      return decryptedData === expectedTestData
+      // Check if decrypted data hash matches expected hash
+      if (expectedTestDataHash) {
+        // New secure method: compare hashes
+        const decryptedHashArray = Array.from(new Uint8Array(decryptedDataHash))
+        const expectedHashArray = Array.from(expectedTestDataHash)
+        
+        return decryptedHashArray.length === expectedHashArray.length &&
+               decryptedHashArray.every((byte, index) => byte === expectedHashArray[index])
+      } else if (expectedTestDataLegacy) {
+        // Legacy method for backward compatibility (will be removed in future)
+        const decoder = new TextDecoder()
+        const decryptedData = decoder.decode(decryptedBuffer)
+        return decryptedData === expectedTestDataLegacy
+      }
+      
+      return false
       
     } catch {
       // Decryption failed, password is incorrect

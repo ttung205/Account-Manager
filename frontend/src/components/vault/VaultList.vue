@@ -755,6 +755,17 @@ const setupMasterPasswordListeners = () => {
     showMasterPasswordDialog.value = true
     isFirstTimeSetup.value = false
   })
+  
+  // Handle master password session expired (e.g. after page reload)
+  window.addEventListener('masterPasswordSessionExpired', () => {
+    toast.add({
+      severity: 'info',
+      summary: 'Yêu cầu xác thực',
+      detail: 'Vui lòng nhập lại master password để mở khóa kho của bạn.',
+      life: 5000
+    })
+    // Dialog will be shown automatically by the onMounted logic
+  })
 }
 
 // Lifecycle
